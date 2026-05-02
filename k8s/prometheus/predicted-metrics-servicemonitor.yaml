@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: predicted-metrics-exporter
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - monitoring   # ✅ FIX HERE
+  selector:
+    matchLabels:
+      app: predicted-metrics-exporter
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 10s

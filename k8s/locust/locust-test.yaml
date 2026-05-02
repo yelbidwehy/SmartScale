@@ -1,0 +1,31 @@
+apiVersion: locust.io/v1
+kind: LocustTest
+metadata:
+  name: online-boutique-test
+  namespace: default
+spec:
+  image: locust-boutique-custom:1.0
+  imagePullPolicy: Never
+  workers: 2
+  args: "--host http://frontend-external.default.svc.cluster.local"
+  locustfile:
+    configMap:
+      name: locust-script
+
+  master:
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+
+  worker:
+    resources:
+      requests:
+        cpu: "2000m"
+        memory: "1Gi"
+      limits:
+        cpu: "4000m"
+        memory: "4Gi"

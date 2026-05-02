@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: locust-workload-pv
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /run/desktop/mnt/host/c/Users/yelbidwehy/OneDrive - Elm/MyFiles/MasterCairo/SecondYear/Term2/GradeProject/start/microservices-demo/release
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: locust-workload-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 2Gi

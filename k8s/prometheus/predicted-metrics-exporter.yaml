@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: predicted-metrics-exporter
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: predicted-metrics-exporter
+  template:
+    metadata:
+      labels:
+        app: predicted-metrics-exporter
+    spec:
+      containers:
+        - name: predicted-metrics-exporter
+          image: predicted-metrics-exporter:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: predicted-metrics-exporter
+  namespace: monitoring
+  labels:
+    app: predicted-metrics-exporter
+spec:
+  selector:
+    app: predicted-metrics-exporter
+  ports:
+    - name: metrics
+      port: 8000
+      targetPort: 8000

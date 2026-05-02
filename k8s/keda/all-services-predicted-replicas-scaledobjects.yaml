@@ -1,0 +1,199 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: adservice-predicted-replicas-scaler
+  namespace: default
+spec:
+  scaleTargetRef:
+    name: adservice
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  pollingInterval: 10
+  cooldownPeriod: 60
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+        metricName: predicted_replicas_adservice
+        query: predicted_replicas{exported_service="adservice"}
+        threshold: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: cartservice-predicted-replicas-scaler
+  namespace: default
+spec:
+  scaleTargetRef:
+    name: cartservice
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  pollingInterval: 10
+  cooldownPeriod: 60
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+        metricName: predicted_replicas_cartservice
+        query: predicted_replicas{exported_service="cartservice"}
+        threshold: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: checkoutservice-predicted-replicas-scaler
+  namespace: default
+spec:
+  scaleTargetRef:
+    name: checkoutservice
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  pollingInterval: 10
+  cooldownPeriod: 60
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+        metricName: predicted_replicas_checkoutservice
+        query: predicted_replicas{exported_service="checkoutservice"}
+        threshold: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: currencyservice-predicted-replicas-scaler
+  namespace: default
+spec:
+  scaleTargetRef:
+    name: currencyservice
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  pollingInterval: 10
+  cooldownPeriod: 60
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+        metricName: predicted_replicas_currencyservice
+        query: predicted_replicas{exported_service="currencyservice"}
+        threshold: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: emailservice-predicted-replicas-scaler
+  namespace: default
+spec:
+  scaleTargetRef:
+    name: emailservice
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  pollingInterval: 10
+  cooldownPeriod: 60
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+        metricName: predicted_replicas_emailservice
+        query: predicted_replicas{exported_service="emailservice"}
+        threshold: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: frontend-predicted-replicas-scaler
+  namespace: default
+spec:
+  scaleTargetRef:
+    name: frontend
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  pollingInterval: 10
+  cooldownPeriod: 60
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+        metricName: predicted_replicas_frontend
+        query: predicted_replicas{exported_service="frontend"}
+        threshold: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: paymentservice-predicted-replicas-scaler
+  namespace: default
+spec:
+  scaleTargetRef:
+    name: paymentservice
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  pollingInterval: 10
+  cooldownPeriod: 60
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+        metricName: predicted_replicas_paymentservice
+        query: predicted_replicas{exported_service="paymentservice"}
+        threshold: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: productcatalogservice-predicted-replicas-scaler
+  namespace: default
+spec:
+  scaleTargetRef:
+    name: productcatalogservice
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  pollingInterval: 10
+  cooldownPeriod: 60
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+        metricName: predicted_replicas_productcatalogservice
+        query: predicted_replicas{exported_service="productcatalogservice"}
+        threshold: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: recommendationservice-predicted-replicas-scaler
+  namespace: default
+spec:
+  scaleTargetRef:
+    name: recommendationservice
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  pollingInterval: 10
+  cooldownPeriod: 60
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+        metricName: predicted_replicas_recommendationservice
+        query: predicted_replicas{exported_service="recommendationservice"}
+        threshold: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: shippingservice-predicted-replicas-scaler
+  namespace: default
+spec:
+  scaleTargetRef:
+    name: shippingservice
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  pollingInterval: 10
+  cooldownPeriod: 60
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+        metricName: predicted_replicas_shippingservice
+        query: predicted_replicas{exported_service="shippingservice"}
+        threshold: "1"

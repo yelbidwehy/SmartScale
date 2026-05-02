@@ -1,0 +1,30 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: autoscaling-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: autoscaling.rules
+      rules:
+        - alert: KubernetesDeploymentScaleUp
+          expr: delta(kube_deployment_status_replicas{namespace="default"}[2m]) > 0
+          for: 30s
+          labels:
+            severity: info
+            action: scale-up
+          annotations:
+            summary: "Deployment scaled UP"
+            description: "Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} scaled up. Current replicas changed upward."
+
+        - alert: KubernetesDeploymentScaleDown
+          expr: delta(kube_deployment_status_replicas{namespace="default"}[2m]) < 0
+          for: 30s
+          labels:
+            severity: info
+            action: scale-down
+          annotations:
+            summary: "Deployment scaled DOWN"
+            description: "Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} scaled down. Current replicas changed downward."
