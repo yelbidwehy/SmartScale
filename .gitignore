@@ -3,7 +3,7 @@ predicted-metrics-exporter.tar
 
 *.tar
 
-data/raw/
+
 *.tar
 *.log
 allfiles.txt
