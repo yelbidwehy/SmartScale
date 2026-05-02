@@ -59,32 +59,35 @@ sum(
     "latency_p95_ms": """
 histogram_quantile(
   0.95,
-  sum(
+  sum by (destination_workload, le) (
     rate(
       istio_request_duration_milliseconds_bucket{
         reporter="destination",
-        destination_workload="frontend"
+        destination_workload_namespace="default",
+        destination_workload!~"unknown|online-boutique-test.*"
       }[1m]
     )
-  ) by (le)
+  )
 )
 """,
 
     "latency_avg_ms": """
-sum(
+sum by (destination_workload) (
   rate(
     istio_request_duration_milliseconds_sum{
       reporter="destination",
-      destination_workload="frontend"
+      destination_workload_namespace="default",
+      destination_workload!~"unknown|online-boutique-test.*"
     }[1m]
   )
 )
 /
-sum(
+sum by (destination_workload) (
   rate(
     istio_request_duration_milliseconds_count{
       reporter="destination",
-      destination_workload="frontend"
+      destination_workload_namespace="default",
+      destination_workload!~"unknown|online-boutique-test.*"
     }[1m]
   )
 )

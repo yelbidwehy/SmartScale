@@ -6,7 +6,7 @@ echo Online Boutique + Istio + Prometheus + Grafana + Locust
 echo =========================================================
 echo.
 
-set PROJECT_ROOT=%~dp0..\..
+for %%i in ("%~dp0..\..") do set "PROJECT_ROOT=%%~fi"
 set K8S_DIR=%PROJECT_ROOT%\k8s
 set DATA_DIR=%PROJECT_ROOT%\data
 
@@ -27,7 +27,7 @@ set EXPORTER_NAME=predicted-metrics-exporter
 set EXPORTER_IMAGE=predicted-metrics-exporter:latest
 
 set EXPORTER_DOCKERFILE=%PROJECT_ROOT%\monitoring\Dockerfile
-set EXPORTER_TAR=%PROJECT_ROOT%\monitoring\predicted-metrics-exporter.tar
+set "EXPORTER_TAR=%PROJECT_ROOT%\monitoring\predicted-metrics-exporter.tar"
 
 set PREDICTED_EXPORTER=%K8S_DIR%\prometheus\predicted-metrics-exporter.yaml
 set PREDICTED_EXPORTER_MONITOR=%K8S_DIR%\prometheus\predicted-metrics-servicemonitor.yaml
@@ -89,48 +89,6 @@ kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=alertmanager -n
 
 
 
-
-REM =========================================================
-REM 5.1 Deploy Predicted Metrics Exporter
-REM =========================================================
-echo [5.1/12] Deploying predicted metrics exporter...
-
-echo [%EXPORTER_NAME%] Building Docker image...
-
-docker build -t %EXPORTER_IMAGE% -f %EXPORTER_DOCKERFILE% %PROJECT_ROOT%
-if errorlevel 1 exit /b 1
-
-echo [%EXPORTER_NAME%] Saving image...
-
-docker save %EXPORTER_IMAGE% -o %EXPORTER_TAR%
-if errorlevel 1 exit /b 1
-
-echo [%EXPORTER_NAME%] Importing image into Kubernetes nodes...
-
-for /f "tokens=1" %%N in ('docker ps --format "{{.Names}}" ^| findstr /R "desktop-control-plane desktop-worker"') do (
-    echo Importing into %%N...
-
-    docker cp %EXPORTER_TAR% %%N:/predicted-metrics-exporter.tar
-    if errorlevel 1 exit /b 1
-
-    docker exec %%N ctr -n k8s.io images import /predicted-metrics-exporter.tar
-    if errorlevel 1 exit /b 1
-)
-
-echo [%EXPORTER_NAME%] Applying Kubernetes manifests...
-
-kubectl apply -f %PREDICTED_EXPORTER%
-if errorlevel 1 exit /b 1
-
-kubectl apply -f %PREDICTED_EXPORTER_MONITOR%
-if errorlevel 1 exit /b 1
-
-echo [%EXPORTER_NAME%] Waiting for pod...
-
-kubectl wait --for=condition=Ready pod -l app=%EXPORTER_NAME% -n monitoring --timeout=300s
-if errorlevel 1 exit /b 1
-
-echo [%EXPORTER_NAME%] Ready.
 
 
 REM =========================================================
