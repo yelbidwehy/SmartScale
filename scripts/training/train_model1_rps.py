@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 import joblib
+
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from pathlib import Path
@@ -13,15 +14,19 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data" / "processed" / "two_model_dataset" / "model1_rps_forecast"
 MODEL_PATH = PROJECT_ROOT / "models" / "model1_rps_lstm.pth"
 CHART_DIR = PROJECT_ROOT / "outputs" / "charts"
+EVAL_DIR = PROJECT_ROOT / "outputs" / "evaluations"
 
+MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
+CHART_DIR.mkdir(parents=True, exist_ok=True)
+EVAL_DIR.mkdir(parents=True, exist_ok=True)
 
 EPOCHS = 100
 LEARNING_RATE = 0.001
 
-X = np.load(os.path.join(DATA_DIR, "X_rps.npy"))
-y = np.load(os.path.join(DATA_DIR, "y_rps.npy"))
+X = np.load(DATA_DIR / "X_rps.npy")
+y = np.load(DATA_DIR / "y_rps.npy")
 
-rps_scaler = joblib.load(os.path.join(DATA_DIR, "rps_scaler.pkl"))
+rps_scaler = joblib.load(DATA_DIR / "rps_scaler.pkl")
 
 print("Dataset loaded")
 print(f"X shape: {X.shape}")
@@ -37,7 +42,6 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 X_train = torch.tensor(X_train, dtype=torch.float32)
 y_train = torch.tensor(y_train, dtype=torch.float32)
-
 X_test = torch.tensor(X_test, dtype=torch.float32)
 y_test = torch.tensor(y_test, dtype=torch.float32)
 
@@ -58,8 +62,7 @@ class RPSLSTMModel(nn.Module):
     def forward(self, x):
         out, _ = self.lstm(x)
         out = out[:, -1, :]
-        out = self.fc(out)
-        return out
+        return self.fc(out)
 
 
 model = RPSLSTMModel(input_size=1)
@@ -72,11 +75,11 @@ test_losses = []
 
 for epoch in range(EPOCHS):
     model.train()
-
     optimizer.zero_grad()
-    outputs = model(X_train)
 
+    outputs = model(X_train)
     loss = criterion(outputs, y_train)
+
     loss.backward()
     optimizer.step()
 
@@ -95,11 +98,8 @@ for epoch in range(EPOCHS):
     )
 
 torch.save(model.state_dict(), MODEL_PATH)
-print("Model saved: model1_rps_lstm.pth")
+print(f"Model saved: {MODEL_PATH}")
 
-# ========================
-# Plot training loss
-# ========================
 plt.figure(figsize=(10, 5))
 plt.plot(train_losses, label="Train Loss")
 plt.plot(test_losses, label="Test Loss")
@@ -109,11 +109,8 @@ plt.ylabel("MSE Loss")
 plt.legend()
 plt.grid(True)
 plt.savefig(CHART_DIR / "model1_rps_training_loss.png", dpi=300, bbox_inches="tight")
-plt.show()
+plt.close()
 
-# ========================
-# Prediction vs Actual
-# ========================
 model.eval()
 
 with torch.no_grad():
@@ -140,8 +137,8 @@ plt.ylabel("Requests per Second")
 plt.legend()
 plt.grid(True)
 plt.savefig(CHART_DIR / "model1_rps_prediction_vs_actual.png", dpi=300, bbox_inches="tight")
-#plt.show()
+plt.close()
 
 print("Charts saved:")
-print("- model1_rps_training_loss.png")
-print("- model1_rps_prediction_vs_actual.png")
+print(f"- {CHART_DIR / 'model1_rps_training_loss.png'}")
+print(f"- {CHART_DIR / 'model1_rps_prediction_vs_actual.png'}")

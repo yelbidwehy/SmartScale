@@ -11,8 +11,8 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-DATA_DIR = PROJECT_ROOT / "data" / "processed" / "two_model_dataset" / "model2_capacity_per_service"
-MODEL_PATH = PROJECT_ROOT / "models" / "model2_capacity_per_service_nn.pth"
+DATA_DIR = PROJECT_ROOT / "data" / "processed" / "model2_dataset_v2"
+MODEL_PATH = PROJECT_ROOT / "models" / "model2_capacity_nn_v2.pth"
 CHART_DIR = PROJECT_ROOT / "outputs" / "charts"
 EVAL_DIR = PROJECT_ROOT / "outputs" / "evaluations"
 
@@ -20,38 +20,39 @@ MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
 CHART_DIR.mkdir(parents=True, exist_ok=True)
 EVAL_DIR.mkdir(parents=True, exist_ok=True)
 
-EPOCHS = 300
+EPOCHS = 200
 LEARNING_RATE = 0.001
 MIN_REPLICAS = 1
 MAX_REPLICAS = 10
 
-X = np.load(DATA_DIR / "X_capacity.npy")
-y = np.load(DATA_DIR / "y_capacity.npy")
+X = np.load(DATA_DIR / "X.npy")
+y = np.load(DATA_DIR / "y.npy")
 
-input_scaler = joblib.load(DATA_DIR / "capacity_input_scaler.pkl")
-output_scaler = joblib.load(DATA_DIR / "capacity_output_scaler.pkl")
+input_scaler = joblib.load(DATA_DIR / "input_scaler.pkl")
+output_scaler = joblib.load(DATA_DIR / "output_scaler.pkl")
 
-with open(DATA_DIR / "target_columns.txt", "r") as f:
-    target_columns = [line.strip() for line in f.readlines()]
+debug_df = pd.read_csv(DATA_DIR / "dataset_debug.csv")
 
-with open(DATA_DIR / "feature_columns.txt", "r") as f:
-    feature_columns = [line.strip() for line in f.readlines()]
+feature_columns = [
+    "frontend_rps",
+    "cpu_usage_cores",
+    "memory_usage_bytes",
+    "latency_p95_ms",
+    "latency_avg_ms"
+]
 
 INPUT_SIZE = X.shape[1]
-OUTPUT_SIZE = len(target_columns)
+OUTPUT_SIZE = y.shape[1]
 
 print("Dataset loaded")
 print(f"X shape: {X.shape}")
 print(f"y shape: {y.shape}")
 print(f"Input features: {INPUT_SIZE}")
-print(f"Features: {feature_columns}")
 print(f"Output targets: {OUTPUT_SIZE}")
-print(f"Targets: {target_columns}")
+print(f"Features: {feature_columns}")
 
-if not all(col.endswith("_replicas") for col in target_columns):
-    print("\nWARNING:")
-    print("Some target columns do not end with '_replicas'.")
-    print("Please confirm your dataset preparation script is producing replica targets.\n")
+print("\nTarget replica distribution:")
+print(debug_df["required_replicas"].value_counts().sort_index())
 
 X_train, X_test, y_train, y_test = train_test_split(
     X,
@@ -74,13 +75,10 @@ class CapacityReplicaNN(nn.Module):
         self.model = nn.Sequential(
             nn.Linear(input_size, 64),
             nn.ReLU(),
-
             nn.Linear(64, 128),
             nn.ReLU(),
-
             nn.Linear(128, 64),
             nn.ReLU(),
-
             nn.Linear(64, output_size)
         )
 
@@ -88,10 +86,7 @@ class CapacityReplicaNN(nn.Module):
         return self.model(x)
 
 
-model = CapacityReplicaNN(
-    input_size=INPUT_SIZE,
-    output_size=OUTPUT_SIZE
-)
+model = CapacityReplicaNN(INPUT_SIZE, OUTPUT_SIZE)
 
 criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
@@ -129,12 +124,12 @@ print(f"\nModel saved: {MODEL_PATH}")
 plt.figure(figsize=(10, 5))
 plt.plot(train_losses, label="Train Loss")
 plt.plot(test_losses, label="Test Loss")
-plt.title("Model 2 - Replica Prediction Loss")
+plt.title("Model 2 - Capacity Replica Prediction Loss")
 plt.xlabel("Epoch")
 plt.ylabel("MSE Loss")
 plt.legend()
 plt.grid(True)
-plt.savefig(CHART_DIR / "model2_replica_training_loss.png", dpi=300, bbox_inches="tight")
+plt.savefig(CHART_DIR / "model2_capacity_v2_training_loss.png", dpi=300, bbox_inches="tight")
 plt.close()
 
 model.eval()
@@ -157,46 +152,26 @@ print("\nOverall Model 2 Evaluation:")
 print(f"Overall MAE  : {overall_mae:.4f} replicas")
 print(f"Overall RMSE : {overall_rmse:.4f} replicas")
 
-results = []
+eval_df = pd.DataFrame({
+    "actual_replicas": actual_real.flatten(),
+    "predicted_replicas": pred_real.flatten()
+})
 
-print("\nPer-Service Replica Evaluation:")
+eval_df.to_csv(EVAL_DIR / "model2_capacity_v2_evaluation.csv", index=False)
 
-for i, col in enumerate(target_columns):
-    actual_col = actual_real[:, i]
-    pred_col = pred_real[:, i]
-
-    mae = mean_absolute_error(actual_col, pred_col)
-    rmse = np.sqrt(mean_squared_error(actual_col, pred_col))
-
-    results.append({
-        "target": col,
-        "mae_replicas": mae,
-        "rmse_replicas": rmse
-    })
-
-    print(f"{col:40s} | MAE: {mae:.4f} replicas | RMSE: {rmse:.4f} replicas")
-
-eval_df = pd.DataFrame(results)
-eval_df.to_csv(EVAL_DIR / "model2_replica_evaluation.csv", index=False)
-
-selected_targets = target_columns[:6]
-
-for target in selected_targets:
-    idx = target_columns.index(target)
-
-    plt.figure(figsize=(10, 5))
-    plt.plot(actual_real[:, idx], label=f"Actual {target}")
-    plt.plot(pred_real[:, idx], label=f"Predicted {target}")
-    plt.title(f"Replica Prediction - {target}")
-    plt.xlabel("Test Sample")
-    plt.ylabel("Replicas")
-    plt.legend()
-    plt.grid(True)
-    plt.savefig(CHART_DIR / f"model2_{target}_prediction.png", dpi=300, bbox_inches="tight")
-    plt.close()
+plt.figure(figsize=(10, 5))
+plt.plot(actual_real.flatten(), label="Actual Replicas")
+plt.plot(pred_real.flatten(), label="Predicted Replicas")
+plt.title("Model 2 - Actual vs Predicted Replicas")
+plt.xlabel("Test Sample")
+plt.ylabel("Replicas")
+plt.legend()
+plt.grid(True)
+plt.savefig(CHART_DIR / "model2_capacity_v2_prediction_vs_actual.png", dpi=300, bbox_inches="tight")
+plt.close()
 
 print("\nFiles saved:")
 print(f"- {MODEL_PATH}")
-print(f"- {CHART_DIR / 'model2_replica_training_loss.png'}")
-print(f"- {EVAL_DIR / 'model2_replica_evaluation.csv'}")
-print("- selected replica prediction charts")
+print(f"- {CHART_DIR / 'model2_capacity_v2_training_loss.png'}")
+print(f"- {CHART_DIR / 'model2_capacity_v2_prediction_vs_actual.png'}")
+print(f"- {EVAL_DIR / 'model2_capacity_v2_evaluation.csv'}")
