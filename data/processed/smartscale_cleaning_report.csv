@@ -1,0 +1,11 @@
+item,value
+raw_rows,27136.0
+cleaned_rows,5930.0
+runs,5.0
+services,10.0
+frontend_rps_zero_rows,430.0
+frontend_rps_min,0.0
+frontend_rps_max,249.19921053483037
+latency_avg_missing_before_fill,1374.0
+latency_p95_missing_before_fill,1374.0
+missing_values_after_cleaning,0.0
