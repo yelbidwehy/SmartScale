@@ -1,7 +1,7 @@
-import os
-import math
 import argparse
+import subprocess
 import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
 import joblib
@@ -9,60 +9,128 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-
-# ========================
-# Paths
-# ========================
-MODEL2_DIR = PROJECT_ROOT / "data" / "processed" / "two_model_dataset" / "model2_capacity_per_service"
-MODEL2_PATH = PROJECT_ROOT / "models" / "model2_capacity_per_service_nn.pth"
-
-# ========================
-# Scaling settings
-# ========================
-CPU_PER_POD = 0.5
-MEMORY_PER_POD_MB = 512
-SAFETY_FACTOR = 1.2
+DATA_DIR = PROJECT_ROOT / "data" / "processed" / "model2_dataset_v2"
+MODEL_PATH = PROJECT_ROOT / "models" / "model2_capacity_nn_v2.pth"
 
 MIN_REPLICAS = 1
 MAX_REPLICAS = 10
 
-# Services you may not want to scale using deployment
-EXCLUDE_FROM_SCALING = [
-    "redis-cart"
+TARGET_SERVICES = [
+    "adservice",
+    "cartservice",
+    "checkoutservice",
+    "currencyservice",
+    "emailservice",
+    "frontend",
+    "paymentservice",
+    "productcatalogservice",
+    "recommendationservice",
+    "shippingservice",
 ]
 
 
-# ========================
-# Model 2: Per-service Capacity NN
-# ========================
-class CapacityPerServiceNN(nn.Module):
-    def __init__(self, output_size):
+class CapacityReplicaNN(nn.Module):
+    def __init__(self, input_size, output_size=1):
         super().__init__()
 
         self.model = nn.Sequential(
-            nn.Linear(2, 64),
+            nn.Linear(input_size, 64),
             nn.ReLU(),
             nn.Linear(64, 128),
             nn.ReLU(),
             nn.Linear(128, 64),
             nn.ReLU(),
-            nn.Linear(64, output_size)
+            nn.Linear(64, output_size),
         )
 
     def forward(self, x):
         return self.model(x)
 
 
-def clamp_replicas(value):
-    return max(MIN_REPLICAS, min(MAX_REPLICAS, value))
+def clamp_replica(value):
+    return max(MIN_REPLICAS, min(MAX_REPLICAS, int(round(value))))
 
 
-def get_service_name(target_column):
-    if target_column.endswith("_cpu"):
-        return target_column.replace("_cpu", "")
-    if target_column.endswith("_memory"):
-        return target_column.replace("_memory", "")
-    return target_column
+def load_feature_columns():
+    feature_file = DATA_DIR / "feature_columns.txt"
+
+    with open(feature_file, "r") as f:
+        return [line.strip() for line in f.readlines() if line.strip()]
+
+
+def estimate_metric_by_rps_bucket(debug_df, service, input_rps):
+    svc_df = debug_df[debug_df["service"] == service].copy()
+
+    if svc_df.empty:
+        return {
+            "cpu_usage_cores": 0,
+            "memory_usage_bytes": 0,
+            "latency_p95_ms": 0,
+            "latency_avg_ms": 0,
+        }
+
+    rps_col = "predicted_rps" if "predicted_rps" in svc_df.columns else "frontend_rps"
+
+    svc_df = svc_df.sort_values(rps_col)
+
+    # Take LOW RPS baseline
+    low_df = svc_df.head(50)
+    high_df = svc_df.tail(50)
+
+    low_rps = low_df[rps_col].mean()
+    high_rps = high_df[rps_col].mean()
+
+    def interpolate(metric):
+        low_val = low_df[metric].mean()
+        high_val = high_df[metric].mean()
+
+        if high_rps == low_rps:
+            return low_val
+
+        ratio = (input_rps - low_rps) / (high_rps - low_rps)
+        ratio = max(0, ratio)  # allow >1 (extrapolation)
+
+        return low_val + ratio * (high_val - low_val)
+
+    cpu = interpolate("cpu_usage_cores")
+    memory = interpolate("memory_usage_bytes")
+    p95 = interpolate("latency_p95_ms")
+    avg = interpolate("latency_avg_ms")
+
+    # 🔥 Critical fix: enforce growth
+    BASE_RPS = 50
+    scale_factor = max(1.0, input_rps / BASE_RPS)
+
+    cpu = cpu * scale_factor
+    memory = memory * scale_factor
+
+    return {
+        "cpu_usage_cores": cpu,
+        "memory_usage_bytes": memory,
+        "latency_p95_ms": p95,
+        "latency_avg_ms": avg,
+    }
+
+
+def build_feature_row(feature_columns, service, input_rps, metrics):
+    row = {col: 0 for col in feature_columns}
+
+    if "predicted_rps" in row:
+        row["predicted_rps"] = input_rps
+
+    if "frontend_rps" in row:
+        row["frontend_rps"] = input_rps
+
+    row["cpu_usage_cores"] = metrics["cpu_usage_cores"]
+    row["memory_usage_bytes"] = metrics["memory_usage_bytes"]
+    row["latency_p95_ms"] = metrics["latency_p95_ms"]
+    row["latency_avg_ms"] = metrics["latency_avg_ms"]
+
+    service_col = f"svc_{service}"
+    if service_col in row:
+        row[service_col] = 1
+
+    return [row[col] for col in feature_columns]
 
 
 def main():
@@ -72,128 +140,75 @@ def main():
         "--rps",
         type=float,
         required=True,
-        help="Expected or predicted requests per second, example: --rps 80"
+        help="Expected/predicted frontend RPS, example: --rps 150",
     )
 
     parser.add_argument(
         "--apply",
         action="store_true",
-        help="Actually execute kubectl scale commands. Without this, only prints recommendations."
+        help="Actually run kubectl scale commands",
     )
 
     args = parser.parse_args()
     input_rps = args.rps
 
-    # ========================
-    # Load target columns
-    # ========================
-    with open(os.path.join(MODEL2_DIR, "target_columns.txt"), "r") as f:
-        target_columns = [line.strip() for line in f.readlines()]
+    feature_columns = load_feature_columns()
 
-    output_size = len(target_columns)
+    input_scaler = joblib.load(DATA_DIR / "input_scaler.pkl")
+    output_scaler = joblib.load(DATA_DIR / "output_scaler.pkl")
+    debug_df = pd.read_csv(DATA_DIR / "dataset_debug.csv")
 
-    # ========================
-    # Load scalers
-    # ========================
-    input_scaler = joblib.load(
-        os.path.join(MODEL2_DIR, "capacity_input_scaler.pkl")
-    )
-
-    output_scaler = joblib.load(
-        os.path.join(MODEL2_DIR, "capacity_output_scaler.pkl")
-    )
-
-    # ========================
-    # Load model
-    # ========================
-    model = CapacityPerServiceNN(output_size=output_size)
-    model.load_state_dict(torch.load(MODEL2_PATH, map_location="cpu"))
+    model = CapacityReplicaNN(input_size=len(feature_columns), output_size=1)
+    model.load_state_dict(torch.load(MODEL_PATH, map_location="cpu"))
     model.eval()
 
-    # ========================
-    # Predict per-service capacity
-    # ========================
-    X = np.array([[input_rps, input_rps ** 2]])
-    X_scaled = input_scaler.transform(X)
-    X_tensor = torch.tensor(X_scaled, dtype=torch.float32)
-
-    with torch.no_grad():
-        prediction_scaled = model(X_tensor).cpu().numpy()
-
-    prediction_real = output_scaler.inverse_transform(prediction_scaled)[0]
-
-    # ========================
-    # Build service resource map
-    # ========================
-    services = {}
-
-    for col, value in zip(target_columns, prediction_real):
-        service = get_service_name(col)
-
-        if service not in services:
-            services[service] = {
-                "cpu": 0.0,
-                "memory_bytes": 0.0
-            }
-
-        if col.endswith("_cpu"):
-            services[service]["cpu"] = max(0.0, float(value))
-        elif col.endswith("_memory"):
-            services[service]["memory_bytes"] = max(0.0, float(value))
-
-    # ========================
-    # Calculate replicas per service
-    # ========================
-    print("\n========== Per-Service Capacity Prediction ==========")
-    print(f"Input RPS: {input_rps:.2f}")
-    print(f"CPU per pod: {CPU_PER_POD} cores")
-    print(f"Memory per pod: {MEMORY_PER_POD_MB} MB")
-    print(f"Safety factor: {SAFETY_FACTOR}")
+    print("\n========== Model 2 Manual Replica Prediction ==========")
+    print(f"Input predicted RPS : {input_rps}")
+    print(f"Features count      : {len(feature_columns)}")
+    print("Metric estimation   : RPS bucket/interpolation")
     print("")
 
     commands = []
+    results = []
 
-    for service, values in services.items():
-        predicted_cpu = values["cpu"]
-        predicted_memory_mb = values["memory_bytes"] / (1024 * 1024)
+    for service in TARGET_SERVICES:
+        metrics = estimate_metric_by_rps_bucket(debug_df, service, input_rps)
 
-        # ========================
-        # Correction layer
-        # ========================
-        # Because our dataset is still small, the NN may smooth or reduce CPU at higher RPS.
-        # This correction helps enforce realistic behavior: higher RPS should need higher CPU.
-        BASE_RPS = 50
+        feature_row = build_feature_row(
+            feature_columns=feature_columns,
+            service=service,
+            input_rps=input_rps,
+            metrics=metrics,
+        )
 
-        if input_rps > BASE_RPS:
-            scale_factor = input_rps / BASE_RPS
-            predicted_cpu = predicted_cpu * scale_factor
+        X = np.array([feature_row])
+        X_scaled = input_scaler.transform(X)
+        X_tensor = torch.tensor(X_scaled, dtype=torch.float32)
 
-        required_cpu = predicted_cpu * SAFETY_FACTOR
-        required_memory_mb = predicted_memory_mb * SAFETY_FACTOR
+        with torch.no_grad():
+            pred_scaled = model(X_tensor).cpu().numpy()
 
-        replicas_by_cpu = math.ceil(required_cpu / CPU_PER_POD)
-        replicas_by_memory = math.ceil(required_memory_mb / MEMORY_PER_POD_MB)
+        pred_real = output_scaler.inverse_transform(pred_scaled)[0][0]
+        recommended_replicas = clamp_replica(pred_real)
 
-        recommended_replicas = max(replicas_by_cpu, replicas_by_memory)
-        recommended_replicas = clamp_replicas(recommended_replicas)
+        results.append({
+            "service": service,
+            "raw_output": pred_real,
+            "recommended_replicas": recommended_replicas,
+            **metrics
+        })
 
         print("--------------------------------------------------")
         print(f"Service              : {service}")
-        print(f"Predicted CPU        : {predicted_cpu:.4f} cores")
-        print(f"Predicted Memory     : {predicted_memory_mb:.2f} MB")
-        print(f"Required CPU+buffer  : {required_cpu:.4f} cores")
-        print(f"Required Mem+buffer  : {required_memory_mb:.2f} MB")
-        print(f"Replicas by CPU      : {replicas_by_cpu}")
-        print(f"Replicas by Memory   : {replicas_by_memory}")
+        print(f"Estimated CPU        : {metrics['cpu_usage_cores']:.4f} cores")
+        print(f"Estimated Memory     : {metrics['memory_usage_bytes'] / (1024 * 1024):.2f} MB")
+        print(f"Estimated P95 latency: {metrics['latency_p95_ms']:.2f} ms")
+        print(f"Estimated AVG latency: {metrics['latency_avg_ms']:.2f} ms")
+        print(f"Raw model output     : {pred_real:.3f}")
         print(f"Recommended replicas : {recommended_replicas}")
-
-        if service in EXCLUDE_FROM_SCALING:
-            print(f"Kubernetes command   : SKIPPED ({service} excluded)")
-            continue
 
         command = f"kubectl scale deployment {service} --replicas={recommended_replicas}"
         commands.append(command)
-
         print(f"Kubernetes command   : {command}")
 
     print("\n========== Summary Commands ==========")
@@ -201,24 +216,15 @@ def main():
     for command in commands:
         print(command)
 
-    if input_rps > 100:
-        print("\n⚠️ Warning:")
-        print("Current model was trained roughly on 0–100 RPS.")
-        print("Predictions above this range may not be reliable until more high-load data is collected.")
+    print("\n========== Compact Result ==========")
+    for item in results:
+        print(f"{item['service']:30s} -> {item['recommended_replicas']} replicas")
 
-    # ========================
-    # Optional execution
-    # ========================
     if args.apply:
         print("\n========== Applying Scaling Commands ==========")
-        import subprocess
-
         for command in commands:
             print(f"Executing: {command}")
-            result = subprocess.run(command, shell=True)
-
-            if result.returncode != 0:
-                print(f"Failed command: {command}")
+            subprocess.run(command, shell=True)
 
 
 if __name__ == "__main__":
