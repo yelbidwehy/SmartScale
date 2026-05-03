@@ -47,7 +47,8 @@ print(f"X shape: {X.shape}")
 print(f"y shape: {y.shape}")
 print(f"Input features: {INPUT_SIZE}")
 print(f"Output targets: {OUTPUT_SIZE}")
-print("Features:")
+
+print("\nFeatures:")
 for col in feature_columns:
     print(f"- {col}")
 
@@ -94,13 +95,28 @@ class CapacityReplicaNN(nn.Module):
         return self.model(x)
 
 
+def weighted_mse_loss(pred, target):
+    # Penalize under-scaling more than over-scaling
+    error = pred - target
+    
+    under_weight = 1.5
+    over_weight = 1.0
+    
+    weight = torch.where(error < 0, under_weight, over_weight)
+    
+    return torch.mean(weight * (error ** 2))
+
+
 model = CapacityReplicaNN(INPUT_SIZE, OUTPUT_SIZE)
 
-criterion = nn.MSELoss()
+
 optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
 train_losses = []
 test_losses = []
+
+best_test_loss = float("inf")
+best_state = None
 
 # =========================
 # Training
@@ -111,17 +127,21 @@ for epoch in range(EPOCHS):
     optimizer.zero_grad()
     outputs = model(X_train)
 
-    loss = criterion(outputs, y_train)
+    loss = weighted_mse_loss(outputs, y_train)
     loss.backward()
     optimizer.step()
 
     model.eval()
     with torch.no_grad():
         test_outputs = model(X_test)
-        test_loss = criterion(test_outputs, y_test)
+        test_loss = weighted_mse_loss(test_outputs, y_test)
 
     train_losses.append(loss.item())
     test_losses.append(test_loss.item())
+
+    if test_loss.item() < best_test_loss:
+        best_test_loss = test_loss.item()
+        best_state = model.state_dict()
 
     print(
         f"Epoch {epoch + 1}/{EPOCHS} | "
@@ -129,11 +149,16 @@ for epoch in range(EPOCHS):
         f"Test Loss: {test_loss.item():.4f}"
     )
 
+# Load best model state
+if best_state is not None:
+    model.load_state_dict(best_state)
+
 # =========================
 # Save model
 # =========================
 torch.save(model.state_dict(), MODEL_PATH)
 print(f"\nModel saved: {MODEL_PATH}")
+print(f"Best test loss: {best_test_loss:.6f}")
 
 # =========================
 # Loss chart
@@ -159,18 +184,27 @@ with torch.no_grad():
 
 actual_scaled = y_test.cpu().numpy()
 
-pred_real = output_scaler.inverse_transform(pred_scaled)
-actual_real = output_scaler.inverse_transform(actual_scaled)
+pred_real_raw = output_scaler.inverse_transform(pred_scaled)
+actual_real_raw = output_scaler.inverse_transform(actual_scaled)
 
-pred_real = np.clip(np.rint(pred_real), MIN_REPLICAS, MAX_REPLICAS)
-actual_real = np.clip(np.rint(actual_real), MIN_REPLICAS, MAX_REPLICAS)
+pred_real = np.clip(np.rint(pred_real_raw), MIN_REPLICAS, MAX_REPLICAS)
+actual_real = np.clip(np.rint(actual_real_raw), MIN_REPLICAS, MAX_REPLICAS)
 
 overall_mae = mean_absolute_error(actual_real, pred_real)
 overall_rmse = np.sqrt(mean_squared_error(actual_real, pred_real))
+exact_match_accuracy = (actual_real.flatten() == pred_real.flatten()).mean()
+
+under_scaled = (pred_real.flatten() < actual_real.flatten()).sum()
+over_scaled = (pred_real.flatten() > actual_real.flatten()).sum()
+correct_scaled = (pred_real.flatten() == actual_real.flatten()).sum()
 
 print("\nOverall Model 2 Evaluation:")
-print(f"Overall MAE  : {overall_mae:.4f} replicas")
-print(f"Overall RMSE : {overall_rmse:.4f} replicas")
+print(f"Overall MAE              : {overall_mae:.4f} replicas")
+print(f"Overall RMSE             : {overall_rmse:.4f} replicas")
+print(f"Exact Match Accuracy     : {exact_match_accuracy:.4%}")
+print(f"Correct predictions      : {correct_scaled}")
+print(f"Under-scaled predictions : {under_scaled}")
+print(f"Over-scaled predictions  : {over_scaled}")
 
 # =========================
 # Evaluation CSV with service context
@@ -179,20 +213,35 @@ test_debug = debug_df.iloc[idx_test].reset_index(drop=True)
 
 eval_df = pd.DataFrame({
     "timestamp": test_debug["timestamp"] if "timestamp" in test_debug.columns else None,
+    "run_name": test_debug["run_name"] if "run_name" in test_debug.columns else None,
+    "users": test_debug["users"] if "users" in test_debug.columns else None,
     "service": test_debug["service"],
     "frontend_rps": test_debug["frontend_rps"],
+    "service_rps": test_debug["service_rps"] if "service_rps" in test_debug.columns else None,
     "predicted_rps": test_debug["predicted_rps"],
     "cpu_usage_cores": test_debug["cpu_usage_cores"],
     "memory_usage_bytes": test_debug["memory_usage_bytes"],
     "latency_p95_ms": test_debug["latency_p95_ms"],
     "latency_avg_ms": test_debug["latency_avg_ms"],
     "actual_replicas": actual_real.flatten(),
-    "predicted_replicas": pred_real.flatten()
+    "predicted_replicas": pred_real.flatten(),
+    "actual_replicas_raw": actual_real_raw.flatten(),
+    "predicted_replicas_raw": pred_real_raw.flatten()
 })
 
 eval_df["absolute_error"] = (
     eval_df["actual_replicas"] - eval_df["predicted_replicas"]
 ).abs()
+
+eval_df["prediction_status"] = np.where(
+    eval_df["predicted_replicas"] < eval_df["actual_replicas"],
+    "under_scaled",
+    np.where(
+        eval_df["predicted_replicas"] > eval_df["actual_replicas"],
+        "over_scaled",
+        "correct"
+    )
+)
 
 eval_df.to_csv(EVAL_DIR / "model2_capacity_v2_evaluation.csv", index=False)
 
@@ -205,8 +254,13 @@ per_service_eval = (
     .agg(
         samples=("service", "count"),
         mae=("absolute_error", "mean"),
+        exact_match_accuracy=("prediction_status", lambda s: (s == "correct").mean()),
+        under_scaled=("prediction_status", lambda s: (s == "under_scaled").sum()),
+        over_scaled=("prediction_status", lambda s: (s == "over_scaled").sum()),
         actual_avg=("actual_replicas", "mean"),
-        predicted_avg=("predicted_replicas", "mean")
+        predicted_avg=("predicted_replicas", "mean"),
+        actual_min=("actual_replicas", "min"),
+        actual_max=("actual_replicas", "max"),
     )
     .reset_index()
 )
@@ -215,6 +269,69 @@ per_service_eval.to_csv(EVAL_DIR / "model2_capacity_v2_per_service_evaluation.cs
 
 print("\nPer-service evaluation:")
 print(per_service_eval)
+
+# =========================
+# Dynamic-service evaluation
+# Services where actual replicas are sometimes > 1
+# =========================
+dynamic_services = (
+    eval_df
+    .groupby("service")["actual_replicas"]
+    .max()
+)
+
+dynamic_services = dynamic_services[dynamic_services > 1].index.tolist()
+dynamic_eval_df = eval_df[eval_df["service"].isin(dynamic_services)].copy()
+
+if not dynamic_eval_df.empty:
+    dynamic_mae = mean_absolute_error(
+        dynamic_eval_df["actual_replicas"],
+        dynamic_eval_df["predicted_replicas"]
+    )
+    dynamic_rmse = np.sqrt(mean_squared_error(
+        dynamic_eval_df["actual_replicas"],
+        dynamic_eval_df["predicted_replicas"]
+    ))
+    dynamic_accuracy = (
+        dynamic_eval_df["actual_replicas"] == dynamic_eval_df["predicted_replicas"]
+    ).mean()
+
+    print("\nDynamic Services Evaluation:")
+    print(f"Dynamic services          : {dynamic_services}")
+    print(f"Dynamic MAE               : {dynamic_mae:.4f} replicas")
+    print(f"Dynamic RMSE              : {dynamic_rmse:.4f} replicas")
+    print(f"Dynamic Exact Accuracy    : {dynamic_accuracy:.4%}")
+
+    dynamic_eval_df.to_csv(
+        EVAL_DIR / "model2_capacity_v2_dynamic_services_evaluation.csv",
+        index=False
+    )
+
+# =========================
+# Error summary
+# =========================
+error_summary = pd.DataFrame({
+    "metric": [
+        "overall_mae",
+        "overall_rmse",
+        "exact_match_accuracy",
+        "correct_predictions",
+        "under_scaled_predictions",
+        "over_scaled_predictions",
+        "best_test_loss",
+    ],
+    "value": [
+        overall_mae,
+        overall_rmse,
+        exact_match_accuracy,
+        correct_scaled,
+        under_scaled,
+        over_scaled,
+        best_test_loss,
+    ]
+})
+
+error_summary.to_csv(EVAL_DIR / "model2_capacity_v2_summary.csv", index=False)
 
 # =========================
 # Prediction chart
@@ -230,9 +347,27 @@ plt.grid(True)
 plt.savefig(CHART_DIR / "model2_capacity_v2_prediction_vs_actual.png", dpi=300, bbox_inches="tight")
 plt.close()
 
+# =========================
+# Per-service MAE chart
+# =========================
+plt.figure(figsize=(12, 6))
+plt.bar(per_service_eval["service"], per_service_eval["mae"])
+plt.title("Model 2 - MAE by Service")
+plt.xlabel("Service")
+plt.ylabel("MAE")
+plt.xticks(rotation=45, ha="right")
+plt.grid(axis="y")
+plt.savefig(CHART_DIR / "model2_capacity_v2_per_service_mae.png", dpi=300, bbox_inches="tight")
+plt.close()
+
 print("\nFiles saved:")
 print(f"- {MODEL_PATH}")
 print(f"- {CHART_DIR / 'model2_capacity_v2_training_loss.png'}")
 print(f"- {CHART_DIR / 'model2_capacity_v2_prediction_vs_actual.png'}")
+print(f"- {CHART_DIR / 'model2_capacity_v2_per_service_mae.png'}")
 print(f"- {EVAL_DIR / 'model2_capacity_v2_evaluation.csv'}")
 print(f"- {EVAL_DIR / 'model2_capacity_v2_per_service_evaluation.csv'}")
+print(f"- {EVAL_DIR / 'model2_capacity_v2_summary.csv'}")
+
+if dynamic_eval_df is not None and not dynamic_eval_df.empty:
+    print(f"- {EVAL_DIR / 'model2_capacity_v2_dynamic_services_evaluation.csv'}")

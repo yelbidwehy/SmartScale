@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import os
 import math
 from pathlib import Path
 from sklearn.preprocessing import MinMaxScaler
@@ -38,24 +37,81 @@ def calculate_replicas(cpu, memory_bytes):
 def main():
     df = pd.read_csv(INPUT_FILE)
 
-    # Sort to make shift(-1) meaningful
+    original_rows = len(df)
+
+    # Remove no-load rows
+    df = df[df["frontend_rps"] > 0].copy()
+
     if "timestamp" in df.columns:
         df["timestamp"] = pd.to_datetime(df["timestamp"])
-        df = df.sort_values(["service", "timestamp"])
+        df = df.sort_values(["run_name", "service", "timestamp"])
 
-    # Frontend/gateway latency is now global, not per-service
-    for col in ["latency_p95_ms", "latency_avg_ms"]:
-        df[col] = df[col].ffill().bfill().fillna(0)
+    # Fill required numeric columns safely
+    required_cols = [
+        "frontend_rps",
+        "service_rps",
+        "cpu_usage_cores",
+        "memory_usage_bytes",
+        "latency_p95_ms",
+        "latency_avg_ms"
+    ]
 
-    # Simulate predicted RPS per service timeline
-    df["predicted_rps"] = df.groupby("service")["frontend_rps"].shift(-1)
-    df["predicted_rps"] = df["predicted_rps"].ffill().bfill().fillna(df["frontend_rps"])
+    for col in required_cols:
+        if col not in df.columns:
+            df[col] = 0
+        df[col] = df[col].replace([np.inf, -np.inf], np.nan)
+        df[col] = df.groupby(["run_name", "service"])[col].transform(lambda s: s.ffill().bfill())
+        df[col] = df[col].fillna(0)
 
-    # Target
+    # Predicted RPS: next frontend RPS per run/service
+    df["predicted_rps"] = df.groupby(["run_name", "service"])["frontend_rps"].shift(-1)
+    df["predicted_rps"] = df.groupby(["run_name", "service"])["predicted_rps"].transform(lambda s: s.ffill().bfill())
+    df["predicted_rps"] = df["predicted_rps"].fillna(df["frontend_rps"])
+
+    # RPS trend features
+    df["rps_lag_1"] = df.groupby(["run_name", "service"])["frontend_rps"].shift(1)
+    df["rps_lag_2"] = df.groupby(["run_name", "service"])["frontend_rps"].shift(2)
+    df["rps_lag_3"] = df.groupby(["run_name", "service"])["frontend_rps"].shift(3)
+
+    df["service_rps_lag_1"] = df.groupby(["run_name", "service"])["service_rps"].shift(1)
+
+    df["rps_rolling_mean_3"] = (
+        df.groupby(["run_name", "service"])["frontend_rps"]
+        .rolling(3)
+        .mean()
+        .reset_index(level=[0, 1], drop=True)
+    )
+
+    trend_cols = [
+        "rps_lag_1",
+        "rps_lag_2",
+        "rps_lag_3",
+        "service_rps_lag_1",
+        "rps_rolling_mean_3"
+    ]
+
+    for col in trend_cols:
+        df[col] = df.groupby(["run_name", "service"])[col].transform(lambda s: s.ffill().bfill())
+        df[col] = df[col].fillna(df["frontend_rps"])
+
+    PREDICTION_HORIZON_STEPS = 6  # 6 * 5s = 30 seconds ahead
+
+    df["future_cpu_usage_cores"] = (
+        df.groupby(["run_name", "service"])["cpu_usage_cores"]
+        .shift(-PREDICTION_HORIZON_STEPS)
+    )
+
+    df["future_memory_usage_bytes"] = (
+        df.groupby(["run_name", "service"])["memory_usage_bytes"]
+        .shift(-PREDICTION_HORIZON_STEPS)
+    )
+
+    df = df.dropna(subset=["future_cpu_usage_cores", "future_memory_usage_bytes"])
+
     df["required_replicas"] = df.apply(
         lambda row: calculate_replicas(
-            row["cpu_usage_cores"],
-            row["memory_usage_bytes"]
+            row["future_cpu_usage_cores"],
+            row["future_memory_usage_bytes"]
         ),
         axis=1
     )
@@ -66,6 +122,13 @@ def main():
 
     feature_columns = [
         "predicted_rps",
+        "frontend_rps",
+        "service_rps",
+        "rps_lag_1",
+        "rps_lag_2",
+        "rps_lag_3",
+        "service_rps_lag_1",
+        "rps_rolling_mean_3",
         "cpu_usage_cores",
         "memory_usage_bytes",
         "latency_p95_ms",
@@ -99,10 +162,14 @@ def main():
     print("Dataset prepared successfully")
     print(f"Input file: {INPUT_FILE}")
     print(f"Output dir: {OUTPUT_DIR}")
+    print(f"Original rows: {original_rows}")
+    print(f"Rows after removing zero-load: {len(df)}")
+    print(f"Removed rows: {original_rows - len(df)}")
     print(f"X shape: {X.shape}")
     print(f"y shape: {y.shape}")
     print(f"Features count: {len(feature_columns)}")
-    print(df["required_replicas"].value_counts())
+    print("\nRequired replicas distribution:")
+    print(df["required_replicas"].value_counts().sort_index())
 
 
 if __name__ == "__main__":

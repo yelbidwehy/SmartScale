@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import os
 from pathlib import Path
 from sklearn.preprocessing import MinMaxScaler
 import joblib
@@ -10,8 +9,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 INPUT_FILE = PROJECT_ROOT / "data" / "processed" / "smartscale_training_dataset_cleaned.csv"
 OUTPUT_DIR = PROJECT_ROOT / "data" / "processed" / "two_model_dataset" / "model1_rps_forecast"
 
-WINDOW_SIZE = 12      # 12 rows × 5 sec = 60 seconds history
-PREDICT_STEP = 1      # predict next step = next 5 seconds
+WINDOW_SIZE = 12      # 24 × 5s = 120 seconds history
+PREDICT_STEP = 6      # 6 rows × 5 sec = predict 30 seconds ahead
 TARGET_COLUMN = "frontend_rps"
 
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -25,8 +24,11 @@ def load_and_prepare_data():
 
     df = df.dropna(subset=["timestamp", "run_name", "frontend_rps"])
 
-    # The cleaned dataset has one row per service per timestamp.
-    # For Model 1 we only need one frontend RPS value per timestamp/run.
+    # Remove warm-up / stop / no-load rows
+    df = df[df["frontend_rps"] > 0].copy()
+
+    # Cleaned dataset has one row per service per timestamp.
+    # Model 1 needs one frontend RPS value per timestamp/run.
     rps_df = (
         df.groupby(["run_name", "users", "timestamp"], as_index=False)["frontend_rps"]
         .mean()
@@ -47,7 +49,13 @@ def create_sequences_by_run(df, scaler):
         values = group[[TARGET_COLUMN]].values
         scaled_values = scaler.transform(values)
 
-        for i in range(len(scaled_values) - WINDOW_SIZE - PREDICT_STEP + 1):
+        max_i = len(scaled_values) - WINDOW_SIZE - PREDICT_STEP + 1
+
+        if max_i <= 0:
+            print(f"Skipping {run_name}: not enough rows")
+            continue
+
+        for i in range(max_i):
             X_all.append(scaled_values[i:i + WINDOW_SIZE])
             y_all.append(scaled_values[i + WINDOW_SIZE + PREDICT_STEP - 1, 0])
 
@@ -78,6 +86,7 @@ def main():
     print(f"Rows in RPS time-series: {len(rps_df)}")
     print(f"Window size: {WINDOW_SIZE}")
     print(f"Predict step: {PREDICT_STEP}")
+    print(f"Prediction horizon: {PREDICT_STEP * 5} seconds")
     print(f"X shape: {X.shape}")
     print(f"y shape: {y.shape}")
     print(f"Target: {TARGET_COLUMN}")

@@ -2,7 +2,7 @@ import requests
 import pandas as pd
 import argparse
 from datetime import datetime, timedelta
-import os
+from pathlib import Path
 
 PROMETHEUS_URL = "http://localhost:9090"
 
@@ -24,19 +24,24 @@ else:
 
 STEP = args.step
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-OUTPUT_DIR = os.path.join(BASE_DIR, "data", "raw", "prometheus_export", args.run_name)
-
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+BASE_DIR = Path(__file__).resolve().parents[2]
+OUTPUT_DIR = BASE_DIR / "data" / "raw" / "prometheus_export" / args.run_name
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 print("Using time range:")
-print(f"Start: {START_TIME}")
-print(f"End  : {END_TIME}")
-print(f"Step : {STEP}")
+print(f"Start : {START_TIME}")
+print(f"End   : {END_TIME}")
+print(f"Step  : {STEP}")
 print(f"Output: {OUTPUT_DIR}")
 
+COMMON_ISTIO_FILTER = """
+reporter="destination",
+destination_workload_namespace="default",
+destination_workload!~"unknown|online-boutique-test.*|istio-gateway-istio"
+"""
+
 QUERIES = {
-"total_requests": """
+    "frontend_total_requests": """
 sum(
   increase(
     istio_requests_total{
@@ -48,7 +53,7 @@ sum(
 )
 """,
 
-"rps_total": """
+    "frontend_rps_total": """
 sum(
   rate(
     istio_requests_total{
@@ -60,45 +65,49 @@ sum(
 )
 """,
 
-"latency_p95_ms": """
+    "service_rps": f"""
+sum by (destination_workload) (
+  rate(
+    istio_requests_total{{
+      {COMMON_ISTIO_FILTER}
+    }}[1m]
+  )
+)
+""",
+
+    "service_latency_p95_ms": f"""
 histogram_quantile(
   0.95,
-  sum by (le) (
+  sum by (destination_workload, le) (
     rate(
-      istio_request_duration_milliseconds_bucket{
-        reporter="source",
-        source_workload="istio-gateway-istio",
-        destination_workload="frontend"
-      }[1m]
+      istio_request_duration_milliseconds_bucket{{
+        {COMMON_ISTIO_FILTER}
+      }}[1m]
     )
   )
 )
 """,
 
-"latency_avg_ms": """
-sum(
+    "service_latency_avg_ms": f"""
+sum by (destination_workload) (
   rate(
-    istio_request_duration_milliseconds_sum{
-      reporter="source",
-      source_workload="istio-gateway-istio",
-      destination_workload="frontend"
-    }[1m]
+    istio_request_duration_milliseconds_sum{{
+      {COMMON_ISTIO_FILTER}
+    }}[1m]
   )
 )
 /
-sum(
+sum by (destination_workload) (
   rate(
-    istio_request_duration_milliseconds_count{
-      reporter="source",
-      source_workload="istio-gateway-istio",
-      destination_workload="frontend"
-    }[1m]
+    istio_request_duration_milliseconds_count{{
+      {COMMON_ISTIO_FILTER}
+    }}[1m]
   )
 )
 """,
 
     "cpu_usage_cores": """
-sum by (pod)(
+sum by (pod) (
   rate(
     container_cpu_usage_seconds_total{
       namespace="default",
@@ -111,7 +120,7 @@ sum by (pod)(
 """,
 
     "memory_usage_bytes": """
-sum by (pod)(
+sum by (pod) (
   container_memory_working_set_bytes{
     namespace="default",
     container!="POD",
@@ -139,19 +148,23 @@ def query_range(metric_name, query):
     payload = response.json()
 
     if payload.get("status") != "success":
-        raise Exception(f"Prometheus query failed for {metric_name}: {payload}")
+        raise RuntimeError(f"Prometheus query failed for {metric_name}: {payload}")
 
-    result = payload["data"]["result"]
     rows = []
 
-    for series in result:
+    for series in payload["data"]["result"]:
         labels = series.get("metric", {})
 
         for timestamp, value in series.get("values", []):
+            try:
+                numeric_value = float(value)
+            except ValueError:
+                continue
+
             rows.append({
                 "timestamp": datetime.fromtimestamp(float(timestamp)).strftime("%Y-%m-%d %H:%M:%S"),
                 "metric": metric_name,
-                "value": float(value),
+                "value": numeric_value,
                 **labels
             })
 
@@ -165,7 +178,7 @@ for metric_name, query in QUERIES.items():
 
     df = query_range(metric_name, query)
 
-    output_file = os.path.join(OUTPUT_DIR, f"{metric_name}.csv")
+    output_file = OUTPUT_DIR / f"{metric_name}.csv"
     df.to_csv(output_file, index=False)
 
     print(f"Saved: {output_file} rows={len(df)}")
@@ -175,7 +188,7 @@ for metric_name, query in QUERIES.items():
 
 if all_data:
     combined_df = pd.concat(all_data, ignore_index=True)
-    combined_df.to_csv(os.path.join(OUTPUT_DIR, "combined_metrics.csv"), index=False)
+    combined_df.to_csv(OUTPUT_DIR / "combined_metrics.csv", index=False)
 else:
     print("Warning: no data returned from Prometheus.")
 

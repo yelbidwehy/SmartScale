@@ -1,9 +1,9 @@
-$spawnRate = 2
+$spawnRate = 1
 $hostUrl = "http://istio-gateway-istio.default.svc.cluster.local:80"
 
 $testPlan = @(
    
-    @{ Users = 400; Duration = 10 }
+    @{ Users = 400; Duration = 15 }
     
 )
 
@@ -36,7 +36,7 @@ foreach ($test in $testPlan) {
     Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:8089/stop" -Method GET
 
 
-    python .\data_collection\extract_prometheus_logs.py `
+    python .\scripts\data_collection\extract_prometheus_logs.py `
         --start "$startTime" `
         --end "$endTime" `
         --run-name "run_${users}_users"

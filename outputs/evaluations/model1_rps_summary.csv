@@ -1,0 +1,5 @@
+metric,value
+mae_rps,6.761878967285156
+rmse_rps,8.047077420846021
+best_test_loss,0.016430620104074478
+samples,71.0
