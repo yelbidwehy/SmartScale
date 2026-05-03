@@ -4,9 +4,8 @@ $hostUrl = "http://frontend.default.svc.cluster.local:80"
 $testPlan = @(
     @{ Users = 100; Duration = 5  },
     @{ Users = 200; Duration = 7  },
-    @{ Users = 300; Duration = 10 },
-    @{ Users = 400; Duration = 12 },
-    @{ Users = 500; Duration = 15 }
+    @{ Users = 300; Duration = 10 }
+    
 )
 
 New-Item -ItemType Directory -Force -Path ".\datasets\raw" | Out-Null

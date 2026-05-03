@@ -1,2 +1,0 @@
-cpu_usage_cores
-memory_usage_bytes
