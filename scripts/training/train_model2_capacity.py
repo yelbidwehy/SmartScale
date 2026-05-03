@@ -25,6 +25,9 @@ LEARNING_RATE = 0.001
 MIN_REPLICAS = 1
 MAX_REPLICAS = 10
 
+# =========================
+# Load dataset
+# =========================
 X = np.load(DATA_DIR / "X.npy")
 y = np.load(DATA_DIR / "y.npy")
 
@@ -33,13 +36,8 @@ output_scaler = joblib.load(DATA_DIR / "output_scaler.pkl")
 
 debug_df = pd.read_csv(DATA_DIR / "dataset_debug.csv")
 
-feature_columns = [
-    "frontend_rps",
-    "cpu_usage_cores",
-    "memory_usage_bytes",
-    "latency_p95_ms",
-    "latency_avg_ms"
-]
+with open(DATA_DIR / "feature_columns.txt", "r") as f:
+    feature_columns = [line.strip() for line in f.readlines()]
 
 INPUT_SIZE = X.shape[1]
 OUTPUT_SIZE = y.shape[1]
@@ -49,14 +47,22 @@ print(f"X shape: {X.shape}")
 print(f"y shape: {y.shape}")
 print(f"Input features: {INPUT_SIZE}")
 print(f"Output targets: {OUTPUT_SIZE}")
-print(f"Features: {feature_columns}")
+print("Features:")
+for col in feature_columns:
+    print(f"- {col}")
 
 print("\nTarget replica distribution:")
 print(debug_df["required_replicas"].value_counts().sort_index())
 
-X_train, X_test, y_train, y_test = train_test_split(
+# =========================
+# Train/test split with indexes
+# =========================
+indices = np.arange(len(X))
+
+X_train, X_test, y_train, y_test, idx_train, idx_test = train_test_split(
     X,
     y,
+    indices,
     test_size=0.2,
     shuffle=True,
     random_state=42
@@ -67,7 +73,9 @@ y_train = torch.tensor(y_train, dtype=torch.float32)
 X_test = torch.tensor(X_test, dtype=torch.float32)
 y_test = torch.tensor(y_test, dtype=torch.float32)
 
-
+# =========================
+# Model
+# =========================
 class CapacityReplicaNN(nn.Module):
     def __init__(self, input_size, output_size):
         super().__init__()
@@ -94,6 +102,9 @@ optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 train_losses = []
 test_losses = []
 
+# =========================
+# Training
+# =========================
 for epoch in range(EPOCHS):
     model.train()
 
@@ -118,9 +129,15 @@ for epoch in range(EPOCHS):
         f"Test Loss: {test_loss.item():.4f}"
     )
 
+# =========================
+# Save model
+# =========================
 torch.save(model.state_dict(), MODEL_PATH)
 print(f"\nModel saved: {MODEL_PATH}")
 
+# =========================
+# Loss chart
+# =========================
 plt.figure(figsize=(10, 5))
 plt.plot(train_losses, label="Train Loss")
 plt.plot(test_losses, label="Test Loss")
@@ -132,6 +149,9 @@ plt.grid(True)
 plt.savefig(CHART_DIR / "model2_capacity_v2_training_loss.png", dpi=300, bbox_inches="tight")
 plt.close()
 
+# =========================
+# Evaluation
+# =========================
 model.eval()
 
 with torch.no_grad():
@@ -152,13 +172,53 @@ print("\nOverall Model 2 Evaluation:")
 print(f"Overall MAE  : {overall_mae:.4f} replicas")
 print(f"Overall RMSE : {overall_rmse:.4f} replicas")
 
+# =========================
+# Evaluation CSV with service context
+# =========================
+test_debug = debug_df.iloc[idx_test].reset_index(drop=True)
+
 eval_df = pd.DataFrame({
+    "timestamp": test_debug["timestamp"] if "timestamp" in test_debug.columns else None,
+    "service": test_debug["service"],
+    "frontend_rps": test_debug["frontend_rps"],
+    "predicted_rps": test_debug["predicted_rps"],
+    "cpu_usage_cores": test_debug["cpu_usage_cores"],
+    "memory_usage_bytes": test_debug["memory_usage_bytes"],
+    "latency_p95_ms": test_debug["latency_p95_ms"],
+    "latency_avg_ms": test_debug["latency_avg_ms"],
     "actual_replicas": actual_real.flatten(),
     "predicted_replicas": pred_real.flatten()
 })
 
+eval_df["absolute_error"] = (
+    eval_df["actual_replicas"] - eval_df["predicted_replicas"]
+).abs()
+
 eval_df.to_csv(EVAL_DIR / "model2_capacity_v2_evaluation.csv", index=False)
 
+# =========================
+# Per-service evaluation
+# =========================
+per_service_eval = (
+    eval_df
+    .groupby("service")
+    .agg(
+        samples=("service", "count"),
+        mae=("absolute_error", "mean"),
+        actual_avg=("actual_replicas", "mean"),
+        predicted_avg=("predicted_replicas", "mean")
+    )
+    .reset_index()
+)
+
+per_service_eval.to_csv(EVAL_DIR / "model2_capacity_v2_per_service_evaluation.csv", index=False)
+
+print("\nPer-service evaluation:")
+print(per_service_eval)
+
+# =========================
+# Prediction chart
+# =========================
 plt.figure(figsize=(10, 5))
 plt.plot(actual_real.flatten(), label="Actual Replicas")
 plt.plot(pred_real.flatten(), label="Predicted Replicas")
@@ -175,3 +235,4 @@ print(f"- {MODEL_PATH}")
 print(f"- {CHART_DIR / 'model2_capacity_v2_training_loss.png'}")
 print(f"- {CHART_DIR / 'model2_capacity_v2_prediction_vs_actual.png'}")
 print(f"- {EVAL_DIR / 'model2_capacity_v2_evaluation.csv'}")
+print(f"- {EVAL_DIR / 'model2_capacity_v2_per_service_evaluation.csv'}")

@@ -1,10 +1,9 @@
-$spawnRate = 5
-$hostUrl = "http://frontend.default.svc.cluster.local:80"
+$spawnRate = 2
+$hostUrl = "http://istio-gateway-istio.default.svc.cluster.local:80"
 
 $testPlan = @(
-    @{ Users = 100; Duration = 5  },
-    @{ Users = 200; Duration = 7  },
-    @{ Users = 300; Duration = 10 }
+   
+    @{ Users = 400; Duration = 10 }
     
 )
 
@@ -37,7 +36,7 @@ foreach ($test in $testPlan) {
     Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:8089/stop" -Method GET
 
 
-    python .\scripts\data_collection\extract_prometheus_logs.py `
+    python .\data_collection\extract_prometheus_logs.py `
         --start "$startTime" `
         --end "$endTime" `
         --run-name "run_${users}_users"
@@ -48,10 +47,3 @@ foreach ($test in $testPlan) {
     Start-Sleep -Seconds 120
 }
 
-Write-Host "======================================"
-Write-Host "Merging all runs into one dataset..."
-Write-Host "======================================"
-
-python .\scripts\data_preparation\merge_runs.py
-
-Write-Host "Dataset ready: data\processed\smartscale_training_dataset.csv"

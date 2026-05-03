@@ -24,7 +24,9 @@ else:
 
 STEP = args.step
 
-OUTPUT_DIR = os.path.join("data", "raw", "prometheus_export", args.run_name)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+OUTPUT_DIR = os.path.join(BASE_DIR, "data", "raw", "prometheus_export", args.run_name)
+
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 print("Using time range:")
@@ -34,60 +36,62 @@ print(f"Step : {STEP}")
 print(f"Output: {OUTPUT_DIR}")
 
 QUERIES = {
-    "total_requests": """
+"total_requests": """
 sum(
   increase(
     istio_requests_total{
-      reporter="destination",
+      reporter="source",
+      source_workload="istio-gateway-istio",
       destination_workload="frontend"
     }[1m]
   )
 )
 """,
 
-    "rps_total": """
+"rps_total": """
 sum(
   rate(
     istio_requests_total{
-      reporter="destination",
+      reporter="source",
+      source_workload="istio-gateway-istio",
       destination_workload="frontend"
     }[1m]
   )
 )
 """,
 
-    "latency_p95_ms": """
+"latency_p95_ms": """
 histogram_quantile(
   0.95,
-  sum by (destination_workload, le) (
+  sum by (le) (
     rate(
       istio_request_duration_milliseconds_bucket{
-        reporter="destination",
-        destination_workload_namespace="default",
-        destination_workload!~"unknown|online-boutique-test.*"
+        reporter="source",
+        source_workload="istio-gateway-istio",
+        destination_workload="frontend"
       }[1m]
     )
   )
 )
 """,
 
-    "latency_avg_ms": """
-sum by (destination_workload) (
+"latency_avg_ms": """
+sum(
   rate(
     istio_request_duration_milliseconds_sum{
-      reporter="destination",
-      destination_workload_namespace="default",
-      destination_workload!~"unknown|online-boutique-test.*"
+      reporter="source",
+      source_workload="istio-gateway-istio",
+      destination_workload="frontend"
     }[1m]
   )
 )
 /
-sum by (destination_workload) (
+sum(
   rate(
     istio_request_duration_milliseconds_count{
-      reporter="destination",
-      destination_workload_namespace="default",
-      destination_workload!~"unknown|online-boutique-test.*"
+      reporter="source",
+      source_workload="istio-gateway-istio",
+      destination_workload="frontend"
     }[1m]
   )
 )
