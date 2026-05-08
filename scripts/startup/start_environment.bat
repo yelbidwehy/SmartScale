@@ -215,7 +215,7 @@ new-tab -p "Command Prompt" cmd /k "title Frontend && kubectl port-forward svc/f
 ; new-tab -p "Command Prompt" cmd /k "title Prometheus && kubectl port-forward -n monitoring svc/kube-prometheus-stack-prometheus 9090:9090" ^
 ; new-tab -p "Command Prompt" cmd /k "title Grafana && kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80" ^
 ; new-tab -p "Command Prompt" cmd /k "title Locust && kubectl port-forward -n default svc/online-boutique-test-webui 8089:8089" ^
-; new-tab -p "Command Prompt" cmd /k "title Predicted Metrics && kubectl port-forward -n default svc/predicted-metrics-exporter 8000:8000"
+; new-tab -p "Command Prompt" cmd /k "title Predicted Metrics && kubectl port-forward -n monitoring svc/predicted-metrics-exporter 8000:8000"
 
 echo.
 echo =========================================================

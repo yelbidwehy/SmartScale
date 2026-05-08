@@ -1,8 +1,8 @@
 metric,value
-overall_mae,0.09865470975637436
-overall_rmse,0.317642657209151
-exact_match_accuracy,0.9024663677130045
-correct_predictions,805.0
-under_scaled_predictions,2.0
-over_scaled_predictions,85.0
-best_test_loss,0.00553454365581274
+overall_mae,0.08653846383094788
+overall_rmse,0.3006403456754484
+exact_match_accuracy,0.9153846153846154
+correct_predictions,476.0
+under_scaled_predictions,8.0
+over_scaled_predictions,36.0
+best_test_loss,0.004533363040536642

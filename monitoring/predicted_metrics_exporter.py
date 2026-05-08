@@ -1,70 +1,102 @@
 import time
 import math
+import logging
+from pathlib import Path
+from collections import deque, defaultdict
+
 import requests
 import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
 import joblib
-from pathlib import Path
 from prometheus_client import start_http_server, Gauge
+import os
+from pathlib import Path
+
+# =========================================================
+# Logging
+# =========================================================
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent
-#PROJECT_ROOT = Path(__file__).resolve().parents[1]
+# =========================================================
+# Paths
+# =========================================================
+
+if os.name != "nt" and Path("/app").exists():
+    PROJECT_ROOT = Path("/app")
+else:
+    PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+MODEL1_DIR = PROJECT_ROOT / "data" / "processed" / "two_model_dataset" / "model1_rps_forecast"
+MODEL2_DIR = PROJECT_ROOT / "data" / "processed" / "model2_dataset_v2"
+
+MODEL1_PATH = PROJECT_ROOT / "models" / "model1_rps_lstm.pth"
+MODEL2_PATH = PROJECT_ROOT / "models" / "model2_capacity_nn_v2.pth"
 
 
-MODEL1_DIR = PROJECT_ROOT / "data/processed/two_model_dataset/model1_rps_forecast"
-MODEL2_DIR = PROJECT_ROOT / "data/processed/two_model_dataset/model2_capacity_per_service"
-
-MODEL1_PATH = PROJECT_ROOT / "models/model1_rps_lstm.pth"
-MODEL2_PATH = PROJECT_ROOT / "models/model2_capacity_per_service_nn.pth"
+# =========================================================
+# Config
+# =========================================================
 
 PROMETHEUS_URL = "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090"
-#PROMETHEUS_URL = "http://localhost:9090"
+# PROMETHEUS_URL = "http://localhost:9090"
+
+EXPORTER_PORT = 8000
 
 WINDOW_SIZE = 12
-QUERY_MINUTES = 5
-QUERY_STEP = "10s"
+PREDICTION_INTERVAL_SECONDS = 5
 
-CPU_PER_POD = 0.5
-MEMORY_PER_POD_MB = 512
-
-SAFETY_FACTOR = 1.2
 MIN_REPLICAS = 1
 MAX_REPLICAS = 10
 
-PREDICTION_INTERVAL_SECONDS = 10
-
-# Smooth prediction to avoid sudden jumps
 SMOOTHING_ALPHA = 0.3
-
-# Prevent fast scale down
 SCALE_DOWN_COOLDOWN_SECONDS = 60
 
-EXCLUDE_FROM_SCALING = [
-    "redis-cart"
+TRAINING_MAX_RPS = 63.1166
+
+SERVICES = [
+    "adservice",
+    "cartservice",
+    "checkoutservice",
+    "currencyservice",
+    "emailservice",
+    "frontend",
+    "paymentservice",
+    "productcatalogservice",
+    "recommendationservice",
+    "shippingservice",
 ]
+
+EXCLUDE_FROM_SCALING = [
+    # "redis-cart"
+]
+
+
+# =========================================================
+# Runtime State
+# =========================================================
+
+frontend_rps_history = deque(maxlen=WINDOW_SIZE)
+service_rps_history = defaultdict(lambda: deque(maxlen=3))
 
 previous_smoothed_rps = None
 last_replicas = {}
 last_scale_down_time = {}
 
 
+# =========================================================
+# Prometheus Metrics Exposed to KEDA
+# =========================================================
+
 predicted_rps_gauge = Gauge(
     "predicted_requests_per_second",
-    "Predicted future RPS from Model 1"
-)
-
-predicted_service_cpu_gauge = Gauge(
-    "predicted_service_cpu",
-    "Predicted CPU cores required per service",
-    ["service"]
-)
-
-predicted_service_memory_gauge = Gauge(
-    "predicted_service_memory_mb",
-    "Predicted memory MB required per service",
-    ["service"]
+    "Predicted frontend RPS 30 seconds ahead"
 )
 
 predicted_replicas_gauge = Gauge(
@@ -73,17 +105,38 @@ predicted_replicas_gauge = Gauge(
     ["service"]
 )
 
+current_frontend_rps_gauge = Gauge(
+    "current_frontend_rps",
+    "Current frontend RPS"
+)
+
+model2_raw_prediction_gauge = Gauge(
+    "model2_raw_predicted_replicas",
+    "Raw Model 2 predicted replicas before rounding/stabilization",
+    ["service"]
+)
+
+
+# =========================================================
+# Models
+# =========================================================
 
 class RPSLSTMModel(nn.Module):
     def __init__(self, input_size=1, hidden_size=64, num_layers=2):
         super().__init__()
+
         self.lstm = nn.LSTM(
-            input_size,
-            hidden_size,
-            num_layers,
+            input_size=input_size,
+            hidden_size=hidden_size,
+            num_layers=num_layers,
             batch_first=True
         )
-        self.fc = nn.Linear(hidden_size, 1)
+
+        self.fc = nn.Sequential(
+            nn.Linear(hidden_size, 32),
+            nn.ReLU(),
+            nn.Linear(32, 1)
+        )
 
     def forward(self, x):
         out, _ = self.lstm(x)
@@ -91,42 +144,52 @@ class RPSLSTMModel(nn.Module):
         return self.fc(out)
 
 
-class CapacityPerServiceNN(nn.Module):
-    def __init__(self, output_size):
+class CapacityNNV2(nn.Module):
+    def __init__(self, input_size=22):
         super().__init__()
         self.model = nn.Sequential(
-            nn.Linear(2, 64),
+            nn.Linear(input_size, 64),
             nn.ReLU(),
             nn.Linear(64, 128),
             nn.ReLU(),
             nn.Linear(128, 64),
             nn.ReLU(),
-            nn.Linear(64, output_size)
+            nn.Linear(64, 1),
         )
 
     def forward(self, x):
         return self.model(x)
 
 
-def clamp_replicas(value):
-    return max(MIN_REPLICAS, min(MAX_REPLICAS, value))
+# =========================================================
+# Prometheus Helpers
+# =========================================================
+
+def prometheus_query(query: str) -> float:
+    response = requests.get(
+        f"{PROMETHEUS_URL}/api/v1/query",
+        params={"query": query},
+        timeout=10
+    )
+    response.raise_for_status()
+
+    data = response.json()
+    if data.get("status") != "success":
+        raise RuntimeError(f"Prometheus query failed: {data}")
+
+    result = data["data"]["result"]
+    if not result:
+        return 0.0
+
+    value = result[0]["value"][1]
+    if value in ["NaN", "nan", "+Inf", "-Inf"]:
+        return 0.0
+
+    return float(value)
 
 
-def get_service_name(target_column):
-    if target_column.endswith("_cpu"):
-        return target_column.replace("_cpu", "")
-    if target_column.endswith("_memory"):
-        return target_column.replace("_memory", "")
-    return target_column
-
-
-def get_recent_rps_from_prometheus():
-    end = time.time()
-    start = end - (QUERY_MINUTES * 60)
-
-    # Business traffic only for frontend.
-    # Health checks and metrics traffic are excluded.
-    query = '''
+def get_frontend_rps() -> float:
+    query = """
     sum(
       rate(
         istio_requests_total{
@@ -137,46 +200,99 @@ def get_recent_rps_from_prometheus():
         }[1m]
       )
     )
-    '''
+    """
+    return max(0.0, prometheus_query(query))
 
-    response = requests.get(
-        f"{PROMETHEUS_URL}/api/v1/query_range",
-        params={
-            "query": query,
-            "start": start,
-            "end": end,
-            "step": QUERY_STEP
-        },
-        timeout=10
+
+def get_service_rps(service: str) -> float:
+    query = f"""
+    sum(
+      rate(
+        istio_requests_total{{
+          destination_app="{service}",
+          request_operation!~"health|metrics",
+          request_path!~"/health.*|/metrics.*|/ready.*|/live.*"
+        }}[1m]
+      )
     )
+    """
+    return max(0.0, prometheus_query(query))
 
-    response.raise_for_status()
-    data = response.json()
 
-    if data.get("status") != "success":
-        raise RuntimeError(f"Prometheus query failed: {data}")
+def get_service_cpu(service: str) -> float:
+    query = f"""
+    sum(
+      rate(
+        container_cpu_usage_seconds_total{{
+          namespace="default",
+          pod=~"{service}.*",
+          container!="",
+          container!="POD"
+        }}[1m]
+      )
+    )
+    """
+    return max(0.0, prometheus_query(query))
 
-    result = data["data"]["result"]
 
-    if not result:
-        raise RuntimeError("No RPS data returned from Prometheus")
+def get_service_memory_bytes(service: str) -> float:
+    query = f"""
+    sum(
+      container_memory_working_set_bytes{{
+        namespace="default",
+        pod=~"{service}.*",
+        container!="",
+        container!="POD"
+      }}
+    )
+    """
+    return max(0.0, prometheus_query(query))
 
-    values = result[0]["values"]
 
-    rps_series = []
-    for _, value in values:
-        if value not in ["NaN", "nan", "+Inf", "-Inf"]:
-            rps_series.append(float(value))
-
-    if len(rps_series) < WINDOW_SIZE:
-        raise RuntimeError(
-            f"Not enough RPS points. Found {len(rps_series)}, need {WINDOW_SIZE}"
+def get_service_latency_p95(service: str) -> float:
+    query = f"""
+    histogram_quantile(
+      0.95,
+      sum(
+        rate(
+          istio_request_duration_milliseconds_bucket{{
+            destination_app="{service}"
+          }}[1m]
         )
+      ) by (le)
+    )
+    """
+    return max(0.0, prometheus_query(query))
 
-    return rps_series[-WINDOW_SIZE:]
+
+def get_service_latency_avg(service: str) -> float:
+    query = f"""
+    (
+      sum(
+        rate(
+          istio_request_duration_milliseconds_sum{{
+            destination_app="{service}"
+          }}[1m]
+        )
+      )
+      /
+      sum(
+        rate(
+          istio_request_duration_milliseconds_count{{
+            destination_app="{service}"
+          }}[1m]
+        )
+      )
+    )
+    """
+    return max(0.0, prometheus_query(query))
 
 
-def smooth_rps(predicted_rps):
+# =========================================================
+# Prediction Helpers
+# =========================================================
+
+def smooth_rps(predicted_rps: float) -> float:
     global previous_smoothed_rps
 
     if previous_smoothed_rps is None:
@@ -192,22 +308,22 @@ def smooth_rps(predicted_rps):
     return smoothed
 
 
-def stabilize_replicas(service, recommended_replicas):
-    now = time.time()
+def clamp_replicas(value: int) -> int:
+    return max(MIN_REPLICAS, min(MAX_REPLICAS, value))
 
+
+def stabilize_replicas(service: str, recommended_replicas: int) -> int:
+    now = time.time()
     previous = last_replicas.get(service, MIN_REPLICAS)
 
-    # Scale up immediately
     if recommended_replicas > previous:
         last_replicas[service] = recommended_replicas
         last_scale_down_time[service] = now
         return recommended_replicas
 
-    # Keep same replicas
     if recommended_replicas == previous:
         return previous
 
-    # Scale down only after cooldown
     last_down = last_scale_down_time.get(service, 0)
 
     if now - last_down >= SCALE_DOWN_COOLDOWN_SECONDS:
@@ -218,122 +334,268 @@ def stabilize_replicas(service, recommended_replicas):
     return previous
 
 
-print("Loading models and scalers...")
+def predict_future_rps(model1, rps_scaler) -> float:
+    recent_rps = np.array(frontend_rps_history).reshape(-1, 1)
+    recent_scaled = rps_scaler.transform(recent_rps)
+
+    x = recent_scaled.reshape(1, WINDOW_SIZE, 1)
+    x_tensor = torch.tensor(x, dtype=torch.float32)
+
+    with torch.no_grad():
+        pred_scaled = model1(x_tensor).cpu().numpy()
+
+    predicted_rps = rps_scaler.inverse_transform(pred_scaled)[0][0]
+    predicted_rps = max(0.0, float(predicted_rps))
+
+    return smooth_rps(predicted_rps)
+
+
+def build_model2_row(
+    service: str,
+    predicted_rps: float,
+    current_frontend_rps: float,
+    current_service_rps: float,
+    cpu_usage_cores: float,
+    memory_usage_bytes: float,
+    latency_p95_ms: float,
+    latency_avg_ms: float,
+    feature_columns: list[str]
+) -> pd.DataFrame:
+
+    service_history = list(service_rps_history[service])
+
+    service_rps_lag_1 = service_history[-2] if len(service_history) >= 2 else current_service_rps
+
+    frontend_history = list(frontend_rps_history)
+
+    rps_lag_1 = frontend_history[-2] if len(frontend_history) >= 2 else current_frontend_rps
+    rps_lag_2 = frontend_history[-3] if len(frontend_history) >= 3 else current_frontend_rps
+    rps_lag_3 = frontend_history[-4] if len(frontend_history) >= 4 else current_frontend_rps
+
+    rps_rolling_mean_3 = (
+        sum(frontend_history[-3:]) / min(3, len(frontend_history))
+        if frontend_history else current_frontend_rps
+    )
+
+    row = {
+        "predicted_rps": predicted_rps,
+        "frontend_rps": current_frontend_rps,
+        "service_rps": current_service_rps,
+        "rps_lag_1": rps_lag_1,
+        "rps_lag_2": rps_lag_2,
+        "rps_lag_3": rps_lag_3,
+        "service_rps_lag_1": service_rps_lag_1,
+        "rps_rolling_mean_3": rps_rolling_mean_3,
+        "cpu_usage_cores": cpu_usage_cores,
+        "memory_usage_bytes": memory_usage_bytes,
+        "latency_p95_ms": latency_p95_ms,
+        "latency_avg_ms": latency_avg_ms,
+    }
+
+    for svc in SERVICES:
+        row[f"svc_{svc}"] = 1 if svc == service else 0
+
+    df = pd.DataFrame([row])
+
+    for col in feature_columns:
+        if col not in df.columns:
+            df[col] = 0
+
+    return df[feature_columns]
+
+
+def predict_replicas_for_service(
+    model2,
+    input_scaler,
+    output_scaler,
+    feature_df: pd.DataFrame
+) -> float:
+
+    x_raw = feature_df.values
+    x_scaled = input_scaler.transform(x_raw)
+    x_tensor = torch.tensor(x_scaled, dtype=torch.float32)
+
+    with torch.no_grad():
+        y_scaled = model2(x_tensor).cpu().numpy()
+
+    y_real = output_scaler.inverse_transform(y_scaled)[0][0]
+    return float(y_real)
+
+
+# =========================================================
+# Load Models
+# =========================================================
+
+logging.info("Loading models and scalers...")
 
 rps_scaler = joblib.load(MODEL1_DIR / "rps_scaler.pkl")
 
-capacity_input_scaler = joblib.load(MODEL2_DIR / "capacity_input_scaler.pkl")
-capacity_output_scaler = joblib.load(MODEL2_DIR / "capacity_output_scaler.pkl")
+model2_input_scaler = joblib.load(MODEL2_DIR / "input_scaler.pkl")
+model2_output_scaler = joblib.load(MODEL2_DIR / "output_scaler.pkl")
 
-with open(MODEL2_DIR / "target_columns.txt", "r") as f:
-    target_columns = [line.strip() for line in f.readlines()]
+with open(MODEL2_DIR / "feature_columns.txt", "r") as f:
+    feature_columns = [line.strip() for line in f.readlines()]
 
 model1 = RPSLSTMModel()
 model1.load_state_dict(torch.load(MODEL1_PATH, map_location="cpu"))
 model1.eval()
 
-model2 = CapacityPerServiceNN(len(target_columns))
+model2 = CapacityNNV2(input_size=len(feature_columns))
 model2.load_state_dict(torch.load(MODEL2_PATH, map_location="cpu"))
 model2.eval()
 
-print("Models loaded successfully")
+logging.info("Models loaded successfully.")
+logging.info(f"Model 2 feature count: {len(feature_columns)}")
 
 
-def get_prediction():
-    rps_series = get_recent_rps_from_prometheus()
+# =========================================================
+# Main Loop
+# =========================================================
 
-    recent_rps = np.array(rps_series).reshape(-1, 1)
-    recent_scaled = rps_scaler.transform(recent_rps)
+def collect_initial_history():
+    logging.info(f"Collecting initial RPS history: {WINDOW_SIZE} samples...")
 
-    x_rps = recent_scaled.reshape(1, WINDOW_SIZE, 1)
-    x_rps_tensor = torch.tensor(x_rps, dtype=torch.float32)
+    while len(frontend_rps_history) < WINDOW_SIZE:
+        try:
+            current_rps = get_frontend_rps()
 
-    with torch.no_grad():
-        predicted_rps_scaled = model1(x_rps_tensor).cpu().numpy()
+            if current_rps <= 0:
+                logging.info("Skipping zero-RPS sample.")
+            else:
+                frontend_rps_history.append(current_rps)
+                logging.info(
+                    f"Buffered RPS sample {len(frontend_rps_history)}/{WINDOW_SIZE}: {current_rps:.2f}"
+                )
 
-    predicted_rps = rps_scaler.inverse_transform(predicted_rps_scaled)[0][0]
-    predicted_rps = max(0.0, float(predicted_rps))
+        except Exception as e:
+            logging.warning(f"Failed to collect RPS sample: {e}")
 
-    predicted_rps = smooth_rps(predicted_rps)
+        time.sleep(PREDICTION_INTERVAL_SECONDS)
 
-    model2_input = np.array([
-        [predicted_rps, predicted_rps ** 2]
-    ])
+    logging.info("Warmup complete. Starting prediction loop.")
 
-    model2_input_scaled = capacity_input_scaler.transform(model2_input)
-    model2_tensor = torch.tensor(model2_input_scaled, dtype=torch.float32)
 
-    with torch.no_grad():
-        prediction_scaled = model2(model2_tensor).cpu().numpy()
+def run_prediction_loop():
+    while True:
+        try:
+            current_frontend_rps = get_frontend_rps()
+            frontend_rps_history.append(current_frontend_rps)
 
-    prediction_real = capacity_output_scaler.inverse_transform(prediction_scaled)[0]
+            current_frontend_rps_gauge.set(current_frontend_rps)
 
-    services = {}
+            # =====================================================
+            # Zero-traffic rule:
+            # If there is no real traffic, publish minimum replicas.
+            # This prevents old predictions from keeping services scaled up.
+            # =====================================================
+            if current_frontend_rps <= 0.1:
+                logging.info("No active traffic detected. Resetting all services to minimum replicas.")
 
-    for col, value in zip(target_columns, prediction_real):
-        service = get_service_name(col)
+                predicted_rps_gauge.set(0)
 
-        if service not in services:
-            services[service] = {
-                "cpu": 0.0,
-                "memory_mb": 0.0,
-                "replicas": MIN_REPLICAS
-            }
+                decisions = []
 
-        if col.endswith("_cpu"):
-            services[service]["cpu"] = max(0.0, float(value))
+                for service in SERVICES:
+                    last_replicas[service] = MIN_REPLICAS
+                    last_scale_down_time[service] = time.time()
 
-        elif col.endswith("_memory"):
-            # Keep this if your training memory target was in bytes.
-            # If your model already outputs MB, remove the division.
-            services[service]["memory_mb"] = max(0.0, float(value)) / (1024 * 1024)
+                    model2_raw_prediction_gauge.labels(service=service).set(MIN_REPLICAS)
 
-    for service, values in services.items():
-        predicted_cpu = values["cpu"]
-        predicted_memory_mb = values["memory_mb"]
+                    if service not in EXCLUDE_FROM_SCALING:
+                        predicted_replicas_gauge.labels(service=service).set(MIN_REPLICAS)
 
-        required_cpu = predicted_cpu * SAFETY_FACTOR
-        required_memory_mb = predicted_memory_mb * SAFETY_FACTOR
+                    decisions.append({
+                        "service": service,
+                        "raw_prediction": MIN_REPLICAS,
+                        "predicted_replicas": MIN_REPLICAS,
+                        "service_rps": 0,
+                        "cpu": 0,
+                        "memory_mb": 0,
+                        "latency_p95_ms": 0,
+                        "latency_avg_ms": 0,
+                    })
 
-        replicas_by_cpu = math.ceil(required_cpu / CPU_PER_POD)
-        replicas_by_memory = math.ceil(required_memory_mb / MEMORY_PER_POD_MB)
+                logging.info("=" * 80)
+                logging.info(f"Current frontend RPS: {current_frontend_rps:.2f}")
+                logging.info("Predicted frontend RPS (+30s): 0.00")
+                logging.info("\n" + pd.DataFrame(decisions).to_string(index=False))
 
-        recommended_replicas = max(
-            replicas_by_cpu,
-            replicas_by_memory,
-            MIN_REPLICAS
-        )
+                time.sleep(PREDICTION_INTERVAL_SECONDS)
+                continue
 
-        recommended_replicas = clamp_replicas(recommended_replicas)
-        recommended_replicas = stabilize_replicas(service, recommended_replicas)
+            if current_frontend_rps > TRAINING_MAX_RPS:
+                logging.warning(
+                    f"Current RPS {current_frontend_rps:.2f} exceeds training max "
+                    f"{TRAINING_MAX_RPS:.2f}; prediction may be unreliable."
+                )
 
-        values["cpu"] = predicted_cpu
-        values["memory_mb"] = predicted_memory_mb
-        values["replicas"] = recommended_replicas
+            predicted_rps = predict_future_rps(model1, rps_scaler)
+            predicted_rps_gauge.set(predicted_rps)
 
-    return predicted_rps, services
+            decisions = []
+
+            for service in SERVICES:
+                service_rps = get_service_rps(service)
+                service_rps_history[service].append(service_rps)
+
+                cpu = get_service_cpu(service)
+                memory_bytes = get_service_memory_bytes(service)
+                latency_p95 = get_service_latency_p95(service)
+                latency_avg = get_service_latency_avg(service)
+
+                feature_df = build_model2_row(
+                    service=service,
+                    predicted_rps=predicted_rps,
+                    current_frontend_rps=current_frontend_rps,
+                    current_service_rps=service_rps,
+                    cpu_usage_cores=cpu,
+                    memory_usage_bytes=memory_bytes,
+                    latency_p95_ms=latency_p95,
+                    latency_avg_ms=latency_avg,
+                    feature_columns=feature_columns
+                )
+
+                raw_prediction = predict_replicas_for_service(
+                    model2=model2,
+                    input_scaler=model2_input_scaler,
+                    output_scaler=model2_output_scaler,
+                    feature_df=feature_df
+                )
+
+                rounded_replicas = int(round(raw_prediction))
+                rounded_replicas = clamp_replicas(rounded_replicas)
+                stable_replicas = stabilize_replicas(service, rounded_replicas)
+
+                model2_raw_prediction_gauge.labels(service=service).set(raw_prediction)
+
+                if service not in EXCLUDE_FROM_SCALING:
+                    predicted_replicas_gauge.labels(service=service).set(stable_replicas)
+
+                decisions.append({
+                    "service": service,
+                    "raw_prediction": round(raw_prediction, 3),
+                    "predicted_replicas": stable_replicas,
+                    "service_rps": round(service_rps, 2),
+                    "cpu": round(cpu, 3),
+                    "memory_mb": round(memory_bytes / (1024 * 1024), 1),
+                    "latency_p95_ms": round(latency_p95, 2),
+                    "latency_avg_ms": round(latency_avg, 2),
+                })
+
+            logging.info("=" * 80)
+            logging.info(f"Current frontend RPS: {current_frontend_rps:.2f}")
+            logging.info(f"Predicted frontend RPS (+30s): {predicted_rps:.2f}")
+            logging.info("\n" + pd.DataFrame(decisions).to_string(index=False))
+
+        except Exception as e:
+            logging.exception(f"Prediction loop error: {e}")
+
+        time.sleep(PREDICTION_INTERVAL_SECONDS)
 
 
 if __name__ == "__main__":
-    start_http_server(8000)
-    print("Predicted metrics exporter running on port 8000")
+    start_http_server(EXPORTER_PORT)
+    logging.info(f"Predicted metrics exporter running on port {EXPORTER_PORT}")
 
-    while True:
-        try:
-            predicted_rps, services = get_prediction()
-
-            predicted_rps_gauge.set(predicted_rps)
-
-            for service, values in services.items():
-                predicted_service_cpu_gauge.labels(service=service).set(values["cpu"])
-                predicted_service_memory_gauge.labels(service=service).set(values["memory_mb"])
-
-                if service not in EXCLUDE_FROM_SCALING:
-                    predicted_replicas_gauge.labels(service=service).set(values["replicas"])
-
-            print(f"Predicted RPS={predicted_rps:.2f} | Services={services}")
-
-        except Exception as e:
-            print(f"Prediction error: {e}")
-
-        time.sleep(PREDICTION_INTERVAL_SECONDS)
+    collect_initial_history()
+    run_prediction_loop()
