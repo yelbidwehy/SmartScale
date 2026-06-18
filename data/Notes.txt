@@ -1,0 +1,2328 @@
+PS C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale> .\scripts\experiments\run_multi_scenario_experiments.ps1
+Starting combined training and testing load test collection
+Training scenarios: 22 (~2662 records)
+Testing scenarios: 5 (~605 records)
+Total expected records: ~3267
+
+============================================
+PHASE 1: TRAINING DATA COLLECTION
+============================================
+
+Scenario: low_load_5_ramp
+Users: 50 | Spawn Rate: 5/s
+Run: train_low_load_5_ramp_20260618_002846
+Time: 2026-06-18 00:28:46
+Starting Locust swarm...
+
+
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 21:29:13 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 21:29:13 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 21:39:16 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 21:39:16 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 00:28:46
+End   : 2026-06-18 00:38:49
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_load_5_ramp_20260618_002846
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_load_5_ramp_20260618_002846\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_load_5_ramp_20260618_002846\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_load_5_ramp_20260618_002846\service_rps.csv rows=1210
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_load_5_ramp_20260618_002846\service_latency_p95_ms.csv rows=1210
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_load_5_ramp_20260618_002846\service_latency_avg_ms.csv rows=1210
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_load_5_ramp_20260618_002846\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_load_5_ramp_20260618_002846\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_load_5_ramp_20260618_002846
+[OK] Complete: train_low_load_5_ramp_20260618_002846
+Waiting 30s before next scenario...
+Scenario: med_load_10_ramp
+Users: 100 | Spawn Rate: 10/s
+Run: train_med_load_10_ramp_20260618_003922
+Time: 2026-06-18 00:39:22
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 21:39:48 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 21:39:48 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 21:49:53 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 21:49:53 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 00:39:22
+End   : 2026-06-18 00:49:26
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_med_load_10_ramp_20260618_003922
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_med_load_10_ramp_20260618_003922\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_med_load_10_ramp_20260618_003922\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_med_load_10_ramp_20260618_003922\service_rps.csv rows=1209
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_med_load_10_ramp_20260618_003922\service_latency_p95_ms.csv rows=1209
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_med_load_10_ramp_20260618_003922\service_latency_avg_ms.csv rows=1209
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_med_load_10_ramp_20260618_003922\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_med_load_10_ramp_20260618_003922\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_med_load_10_ramp_20260618_003922
+[OK] Complete: train_med_load_10_ramp_20260618_003922
+Waiting 30s before next scenario...
+Scenario: med_high_15_ramp
+Users: 150 | Spawn Rate: 15/s
+Run: train_med_high_15_ramp_20260618_005035
+Time: 2026-06-18 00:50:35
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 21:51:02 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 21:51:02 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 22:01:06 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 22:01:06 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 00:50:35
+End   : 2026-06-18 01:00:39
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_med_high_15_ramp_20260618_005035
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_med_high_15_ramp_20260618_005035\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_med_high_15_ramp_20260618_005035\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_med_high_15_ramp_20260618_005035\service_rps.csv rows=1210
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_med_high_15_ramp_20260618_005035\service_latency_p95_ms.csv rows=1210
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_med_high_15_ramp_20260618_005035\service_latency_avg_ms.csv rows=1210
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_med_high_15_ramp_20260618_005035\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_med_high_15_ramp_20260618_005035\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_med_high_15_ramp_20260618_005035
+[OK] Complete: train_med_high_15_ramp_20260618_005035
+Waiting 30s before next scenario...
+Scenario: high_load_20_ramp
+Users: 200 | Spawn Rate: 20/s
+Run: train_high_load_20_ramp_20260618_010116
+Time: 2026-06-18 01:01:16
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 22:01:42 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 22:01:42 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 22:11:46 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 22:11:46 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 01:01:16
+End   : 2026-06-18 01:11:19
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_load_20_ramp_20260618_010116
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_load_20_ramp_20260618_010116\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_load_20_ramp_20260618_010116\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_load_20_ramp_20260618_010116\service_rps.csv rows=1210
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_load_20_ramp_20260618_010116\service_latency_p95_ms.csv rows=1210
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_load_20_ramp_20260618_010116\service_latency_avg_ms.csv rows=1210
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_load_20_ramp_20260618_010116\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_load_20_ramp_20260618_010116\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_load_20_ramp_20260618_010116
+[OK] Complete: train_high_load_20_ramp_20260618_010116
+Waiting 30s before next scenario...
+Scenario: peak_10_ramp
+Users: 300 | Spawn Rate: 10/s
+Run: train_peak_10_ramp_20260618_011152
+Time: 2026-06-18 01:11:52
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 22:12:19 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 22:12:19 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 22:22:21 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 22:22:21 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 01:11:52
+End   : 2026-06-18 01:21:55
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_10_ramp_20260618_011152
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_10_ramp_20260618_011152\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_10_ramp_20260618_011152\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_10_ramp_20260618_011152\service_rps.csv rows=1208
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_10_ramp_20260618_011152\service_latency_p95_ms.csv rows=1208
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_10_ramp_20260618_011152\service_latency_avg_ms.csv rows=1208
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_10_ramp_20260618_011152\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_10_ramp_20260618_011152\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_10_ramp_20260618_011152
+[OK] Complete: train_peak_10_ramp_20260618_011152
+Waiting 30s before next scenario...
+Scenario: peak_20_ramp
+Users: 300 | Spawn Rate: 20/s
+Run: train_peak_20_ramp_20260618_012239
+Time: 2026-06-18 01:22:39
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 22:23:06 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 22:23:06 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 22:32:42 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 22:32:42 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 01:22:39
+End   : 2026-06-18 01:32:42
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_20_ramp_20260618_012239
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_20_ramp_20260618_012239\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_20_ramp_20260618_012239\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_20_ramp_20260618_012239\service_rps.csv rows=1206
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_20_ramp_20260618_012239\service_latency_p95_ms.csv rows=1206
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_20_ramp_20260618_012239\service_latency_avg_ms.csv rows=1206
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_20_ramp_20260618_012239\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_20_ramp_20260618_012239\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_20_ramp_20260618_012239
+[OK] Complete: train_peak_20_ramp_20260618_012239
+Waiting 30s before next scenario...
+Scenario: sustained_250
+Users: 250 | Spawn Rate: 15/s
+Run: train_sustained_250_20260618_013316
+Time: 2026-06-18 01:33:17
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 22:33:45 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 22:33:45 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 22:43:50 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 22:43:50 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 01:33:18
+End   : 2026-06-18 01:43:23
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_sustained_250_20260618_013316
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_sustained_250_20260618_013316\frontend_total_requests.csv rows=122
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_sustained_250_20260618_013316\frontend_rps_total.csv rows=122
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_sustained_250_20260618_013316\service_rps.csv rows=1216
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_sustained_250_20260618_013316\service_latency_p95_ms.csv rows=1216
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_sustained_250_20260618_013316\service_latency_avg_ms.csv rows=1216
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_sustained_250_20260618_013316\cpu_usage_cores.csv rows=1464
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_sustained_250_20260618_013316\memory_usage_bytes.csv rows=1464
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_sustained_250_20260618_013316
+[OK] Complete: train_sustained_250_20260618_013316
+Waiting 30s before next scenario...
+Scenario: low_slow_ramp
+Users: 100 | Spawn Rate: 5/s
+Run: train_low_slow_ramp_20260618_014357
+Time: 2026-06-18 01:43:57
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 22:44:23 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 22:44:23 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 22:54:28 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 22:54:28 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 01:43:57
+End   : 2026-06-18 01:54:00
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_slow_ramp_20260618_014357
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_slow_ramp_20260618_014357\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_slow_ramp_20260618_014357\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_slow_ramp_20260618_014357\service_rps.csv rows=1206
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_slow_ramp_20260618_014357\service_latency_p95_ms.csv rows=1206
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_slow_ramp_20260618_014357\service_latency_avg_ms.csv rows=1206
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_slow_ramp_20260618_014357\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_slow_ramp_20260618_014357\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_slow_ramp_20260618_014357
+[OK] Complete: train_low_slow_ramp_20260618_014357
+Waiting 30s before next scenario...
+Scenario: mid_stable
+Users: 200 | Spawn Rate: 10/s
+Run: train_mid_stable_20260618_015434
+Time: 2026-06-18 01:54:34
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 22:55:01 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 22:55:01 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 23:05:05 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 23:05:05 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 01:54:34
+End   : 2026-06-18 02:04:38
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_mid_stable_20260618_015434
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_mid_stable_20260618_015434\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_mid_stable_20260618_015434\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_mid_stable_20260618_015434\service_rps.csv rows=1210
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_mid_stable_20260618_015434\service_latency_p95_ms.csv rows=1210
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_mid_stable_20260618_015434\service_latency_avg_ms.csv rows=1210
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_mid_stable_20260618_015434\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_mid_stable_20260618_015434\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_mid_stable_20260618_015434
+[OK] Complete: train_mid_stable_20260618_015434
+Waiting 30s before next scenario...
+Scenario: light_load
+Users: 50 | Spawn Rate: 10/s
+Run: train_light_load_20260618_020512
+Time: 2026-06-18 02:05:12
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 23:05:39 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 23:05:39 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 23:15:42 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 23:15:42 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 02:05:12
+End   : 2026-06-18 02:15:15
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_light_load_20260618_020512
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_light_load_20260618_020512\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_light_load_20260618_020512\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_light_load_20260618_020512\service_rps.csv rows=1210
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_light_load_20260618_020512\service_latency_p95_ms.csv rows=1210
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_light_load_20260618_020512\service_latency_avg_ms.csv rows=1210
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_light_load_20260618_020512\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_light_load_20260618_020512\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_light_load_20260618_020512
+[OK] Complete: train_light_load_20260618_020512
+Waiting 30s before next scenario...
+Scenario: medium_fast
+Users: 150 | Spawn Rate: 20/s
+Run: train_medium_fast_20260618_021549
+Time: 2026-06-18 02:15:49
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 23:15:49 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 23:15:49 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 23:26:19 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 23:26:19 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 02:15:49
+End   : 2026-06-18 02:25:52
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_medium_fast_20260618_021549
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_medium_fast_20260618_021549\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_medium_fast_20260618_021549\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_medium_fast_20260618_021549\service_rps.csv rows=1210
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_medium_fast_20260618_021549\service_latency_p95_ms.csv rows=1210
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_medium_fast_20260618_021549\service_latency_avg_ms.csv rows=1210
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_medium_fast_20260618_021549\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_medium_fast_20260618_021549\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_medium_fast_20260618_021549
+[OK] Complete: train_medium_fast_20260618_021549
+Waiting 30s before next scenario...
+Scenario: peak_moderate
+Users: 300 | Spawn Rate: 15/s
+Run: train_peak_moderate_20260618_022627
+Time: 2026-06-18 02:26:27
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 23:26:54 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 23:26:54 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 23:36:58 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 23:36:58 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 02:26:27
+End   : 2026-06-18 02:36:30
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_moderate_20260618_022627
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_moderate_20260618_022627\frontend_total_requests.csv rows=118
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_moderate_20260618_022627\frontend_rps_total.csv rows=118
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_moderate_20260618_022627\service_rps.csv rows=1210
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_moderate_20260618_022627\service_latency_p95_ms.csv rows=1210
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_moderate_20260618_022627\service_latency_avg_ms.csv rows=1210
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_moderate_20260618_022627\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_moderate_20260618_022627\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_moderate_20260618_022627
+[OK] Complete: train_peak_moderate_20260618_022627
+Waiting 30s before next scenario...
+Scenario: varied_120
+Users: 120 | Spawn Rate: 8/s
+Run: train_varied_120_20260618_023703
+Time: 2026-06-18 02:37:03
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 23:37:31 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 23:37:31 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 23:47:34 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 23:47:34 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 02:37:03
+End   : 2026-06-18 02:47:06
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_varied_120_20260618_023703
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_varied_120_20260618_023703\frontend_total_requests.csv rows=115
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_varied_120_20260618_023703\frontend_rps_total.csv rows=115
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_varied_120_20260618_023703\service_rps.csv rows=1210
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_varied_120_20260618_023703\service_latency_p95_ms.csv rows=1210
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_varied_120_20260618_023703\service_latency_avg_ms.csv rows=1210
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_varied_120_20260618_023703\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_varied_120_20260618_023703\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_varied_120_20260618_023703
+[OK] Complete: train_varied_120_20260618_023703
+Waiting 30s before next scenario...
+Scenario: varied_180
+Users: 180 | Spawn Rate: 12/s
+Run: train_varied_180_20260618_024740
+Time: 2026-06-18 02:47:40
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 23:48:07 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 23:48:07 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 23:58:11 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 23:58:11 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 02:47:40
+End   : 2026-06-18 02:57:43
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_varied_180_20260618_024740
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_varied_180_20260618_024740\frontend_total_requests.csv rows=119
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_varied_180_20260618_024740\frontend_rps_total.csv rows=119
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_varied_180_20260618_024740\service_rps.csv rows=1204
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_varied_180_20260618_024740\service_latency_p95_ms.csv rows=1204
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_varied_180_20260618_024740\service_latency_avg_ms.csv rows=1204
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_varied_180_20260618_024740\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_varied_180_20260618_024740\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_varied_180_20260618_024740
+[OK] Complete: train_varied_180_20260618_024740
+Waiting 30s before next scenario...
+Scenario: high_aggressive
+Users: 280 | Spawn Rate: 25/s
+Run: train_high_aggressive_20260618_025816
+Time: 2026-06-18 02:58:17
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Wed, 17 Jun 2026 23:58:44 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Wed, 17 Jun 2026 23:58:44 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 00:08:47 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 00:08:47 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 02:58:17
+End   : 2026-06-18 03:08:20
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_aggressive_20260618_025816
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_aggressive_20260618_025816\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_aggressive_20260618_025816\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_aggressive_20260618_025816\service_rps.csv rows=1209
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_aggressive_20260618_025816\service_latency_p95_ms.csv rows=1209
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_aggressive_20260618_025816\service_latency_avg_ms.csv rows=1209
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_aggressive_20260618_025816\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_aggressive_20260618_025816\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_aggressive_20260618_025816
+[OK] Complete: train_high_aggressive_20260618_025816
+Waiting 30s before next scenario...
+Scenario: low_conservative
+Users: 80 | Spawn Rate: 6/s
+Run: train_low_conservative_20260618_030853
+Time: 2026-06-18 03:08:53
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 00:09:20 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 00:09:20 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 00:19:23 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 00:19:23 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 03:08:53
+End   : 2026-06-18 03:18:56
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_conservative_20260618_030853
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_conservative_20260618_030853\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_conservative_20260618_030853\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_conservative_20260618_030853\service_rps.csv rows=1210
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_conservative_20260618_030853\service_latency_p95_ms.csv rows=1210
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_conservative_20260618_030853\service_latency_avg_ms.csv rows=1210
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_conservative_20260618_030853\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_conservative_20260618_030853\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_low_conservative_20260618_030853
+[OK] Complete: train_low_conservative_20260618_030853
+Waiting 30s before next scenario...
+Scenario: mid_push
+Users: 220 | Spawn Rate: 18/s
+Run: train_mid_push_20260618_031929
+Time: 2026-06-18 03:19:29
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 00:19:56 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 00:19:56 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 00:29:59 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 00:29:59 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 03:19:29
+End   : 2026-06-18 03:29:31
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_mid_push_20260618_031929
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_mid_push_20260618_031929\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_mid_push_20260618_031929\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_mid_push_20260618_031929\service_rps.csv rows=1210
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_mid_push_20260618_031929\service_latency_p95_ms.csv rows=1210
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_mid_push_20260618_031929\service_latency_avg_ms.csv rows=1210
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_mid_push_20260618_031929\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_mid_push_20260618_031929\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_mid_push_20260618_031929
+[OK] Complete: train_mid_push_20260618_031929
+Waiting 30s before next scenario...
+Scenario: balanced_160
+Users: 160 | Spawn Rate: 11/s
+Run: train_balanced_160_20260618_033006
+Time: 2026-06-18 03:30:06
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 00:30:33 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 00:30:33 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 00:40:09 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 00:40:09 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 03:30:06
+End   : 2026-06-18 03:40:09
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_balanced_160_20260618_033006
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_balanced_160_20260618_033006\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_balanced_160_20260618_033006\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_balanced_160_20260618_033006\service_rps.csv rows=1210
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_balanced_160_20260618_033006\service_latency_p95_ms.csv rows=1210
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_balanced_160_20260618_033006\service_latency_avg_ms.csv rows=1210
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_balanced_160_20260618_033006\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_balanced_160_20260618_033006\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_balanced_160_20260618_033006
+[OK] Complete: train_balanced_160_20260618_033006
+Waiting 30s before next scenario...
+Scenario: extreme_320
+Users: 320 | Spawn Rate: 16/s
+Run: train_extreme_320_20260618_034041
+Time: 2026-06-18 03:40:41
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 00:41:09 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 00:41:09 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 00:51:11 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 00:51:11 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 03:40:41
+End   : 2026-06-18 03:50:44
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_extreme_320_20260618_034041
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_extreme_320_20260618_034041\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_extreme_320_20260618_034041\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_extreme_320_20260618_034041\service_rps.csv rows=1210
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_extreme_320_20260618_034041\service_latency_p95_ms.csv rows=1210
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_extreme_320_20260618_034041\service_latency_avg_ms.csv rows=1210
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_extreme_320_20260618_034041\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_extreme_320_20260618_034041\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_extreme_320_20260618_034041
+[OK] Complete: train_extreme_320_20260618_034041
+Waiting 30s before next scenario...
+Scenario: light_90
+Users: 90 | Spawn Rate: 7/s
+Run: train_light_90_20260618_035118
+Time: 2026-06-18 03:51:18
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 00:51:46 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 00:51:46 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 01:01:48 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 01:01:48 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 03:51:18
+End   : 2026-06-18 04:01:21
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_light_90_20260618_035118
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_light_90_20260618_035118\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_light_90_20260618_035118\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_light_90_20260618_035118\service_rps.csv rows=1210
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_light_90_20260618_035118\service_latency_p95_ms.csv rows=1210
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_light_90_20260618_035118\service_latency_avg_ms.csv rows=1210
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_light_90_20260618_035118\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_light_90_20260618_035118\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_light_90_20260618_035118
+[OK] Complete: train_light_90_20260618_035118
+Waiting 30s before next scenario...
+Scenario: high_240
+Users: 240 | Spawn Rate: 22/s
+Run: train_high_240_20260618_040155
+Time: 2026-06-18 04:01:55
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 01:02:23 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 01:02:23 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 01:12:25 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 01:12:25 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 04:01:55
+End   : 2026-06-18 04:11:58
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_240_20260618_040155
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_240_20260618_040155\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_240_20260618_040155\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_240_20260618_040155\service_rps.csv rows=1210
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_240_20260618_040155\service_latency_p95_ms.csv rows=1210
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_240_20260618_040155\service_latency_avg_ms.csv rows=1210
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_240_20260618_040155\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_240_20260618_040155\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_high_240_20260618_040155
+[OK] Complete: train_high_240_20260618_040155
+Waiting 30s before next scenario...
+Scenario: peak_fast_ramp
+Users: 300 | Spawn Rate: 30/s
+Run: train_peak_fast_ramp_20260618_041237
+Time: 2026-06-18 04:12:37
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 01:13:04 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 01:13:04 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 01:23:08 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 01:23:08 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 04:12:37
+End   : 2026-06-18 04:22:40
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_fast_ramp_20260618_041237
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_fast_ramp_20260618_041237\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_fast_ramp_20260618_041237\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_fast_ramp_20260618_041237\service_rps.csv rows=1210
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_fast_ramp_20260618_041237\service_latency_p95_ms.csv rows=1210
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_fast_ramp_20260618_041237\service_latency_avg_ms.csv rows=1210
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_fast_ramp_20260618_041237\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_fast_ramp_20260618_041237\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\train_peak_fast_ramp_20260618_041237
+[OK] Complete: train_peak_fast_ramp_20260618_041237
+Waiting 30s before next scenario...
+
+============================================
+PHASE 2: TESTING DATA COLLECTION
+============================================
+
+Scenario: test_hybrid_175
+Users: 175 | Spawn Rate: 14/s
+Run: test_test_hybrid_175_20260618_042314
+Time: 2026-06-18 04:23:14
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 01:23:42 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 01:23:42 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 01:33:45 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 01:33:45 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 04:23:14
+End   : 2026-06-18 04:33:18
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_hybrid_175_20260618_042314
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_hybrid_175_20260618_042314\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_hybrid_175_20260618_042314\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_hybrid_175_20260618_042314\service_rps.csv rows=1210
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_hybrid_175_20260618_042314\service_latency_p95_ms.csv rows=1210
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_hybrid_175_20260618_042314\service_latency_avg_ms.csv rows=1210
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_hybrid_175_20260618_042314\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_hybrid_175_20260618_042314\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_hybrid_175_20260618_042314
+[OK] Complete: test_test_hybrid_175_20260618_042314
+Waiting 30s before next scenario...
+Scenario: test_varied_260
+Users: 260 | Spawn Rate: 19/s
+Run: test_test_varied_260_20260618_043352
+Time: 2026-06-18 04:33:52
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 01:34:20 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 01:34:20 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 01:44:27 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 01:44:27 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 04:33:52
+End   : 2026-06-18 04:43:59
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_varied_260_20260618_043352
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_varied_260_20260618_043352\frontend_total_requests.csv rows=122
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_varied_260_20260618_043352\frontend_rps_total.csv rows=122
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_varied_260_20260618_043352\service_rps.csv rows=1220
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_varied_260_20260618_043352\service_latency_p95_ms.csv rows=1220
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_varied_260_20260618_043352\service_latency_avg_ms.csv rows=1220
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_varied_260_20260618_043352\cpu_usage_cores.csv rows=1464
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_varied_260_20260618_043352\memory_usage_bytes.csv rows=1464
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_varied_260_20260618_043352
+[OK] Complete: test_test_varied_260_20260618_043352
+Waiting 30s before next scenario...
+Scenario: test_medium_130
+Users: 130 | Spawn Rate: 9/s
+Run: test_test_medium_130_20260618_044434
+Time: 2026-06-18 04:44:34
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 01:45:03 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 01:45:03 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 01:55:05 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 01:55:05 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 04:44:34
+End   : 2026-06-18 04:54:38
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_medium_130_20260618_044434
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_medium_130_20260618_044434\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_medium_130_20260618_044434\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_medium_130_20260618_044434\service_rps.csv rows=1210
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_medium_130_20260618_044434\service_latency_p95_ms.csv rows=1210
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_medium_130_20260618_044434\service_latency_avg_ms.csv rows=1210
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_medium_130_20260618_044434\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_medium_130_20260618_044434\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_medium_130_20260618_044434
+[OK] Complete: test_test_medium_130_20260618_044434
+Waiting 30s before next scenario...
+Scenario: test_peak_290
+Users: 290 | Spawn Rate: 23/s
+Run: test_test_peak_290_20260618_045511
+Time: 2026-06-18 04:55:11
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 01:55:38 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 01:55:38 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 02:05:42 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 02:05:42 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 04:55:11
+End   : 2026-06-18 05:05:14
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_peak_290_20260618_045511
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_peak_290_20260618_045511\frontend_total_requests.csv rows=121
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_peak_290_20260618_045511\frontend_rps_total.csv rows=121
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_peak_290_20260618_045511\service_rps.csv rows=1210
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_peak_290_20260618_045511\service_latency_p95_ms.csv rows=1210
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_peak_290_20260618_045511\service_latency_avg_ms.csv rows=1210
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_peak_290_20260618_045511\cpu_usage_cores.csv rows=1452
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_peak_290_20260618_045511\memory_usage_bytes.csv rows=1452
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_peak_290_20260618_045511
+[OK] Complete: test_test_peak_290_20260618_045511
+Waiting 30s before next scenario...
+Scenario: test_low_110
+Users: 110 | Spawn Rate: 8/s
+Run: test_test_low_110_20260618_050551
+Time: 2026-06-18 05:05:54
+Starting Locust swarm...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "host": "http://istio-gateway-istio.default.svc.cluster.local:80",
+                      "message": "Swarming started",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 124
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 02:06:24 GMT
+
+                    {
+                      "host": "http://istio-gateway-istio.default.svc.cluster...
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 124], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 02:06:24 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 124
+
+Running for 10 minutes (keeping system awake)...
+Stopping Locust...
+StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Content-Length: 51
+                    Content-Type: application/json
+                    Date: Thu, 18 Jun 2026 02:16:31 GMT
+
+                    {
+                      "message": "Test stopped",
+                      "success": true
+                    }
+
+Forms             :
+Headers           : {[Access-Control-Allow-Origin, *], [Content-Length, 51], [Content-Type, application/json], [Date,
+                    Thu, 18 Jun 2026 02:16:31 GMT]}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        :
+RawContentLength  : 51
+
+Extracting Prometheus metrics...
+Using time range:
+Start : 2026-06-18 05:05:55
+End   : 2026-06-18 05:16:04
+Step  : 5s
+Rate window: 1m
+Output: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_low_110_20260618_050551
+Extracting frontend_total_requests...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_low_110_20260618_050551\frontend_total_requests.csv rows=122
+Extracting frontend_rps_total...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_low_110_20260618_050551\frontend_rps_total.csv rows=122
+Extracting service_rps...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_low_110_20260618_050551\service_rps.csv rows=1214
+Extracting service_latency_p95_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_low_110_20260618_050551\service_latency_p95_ms.csv rows=1214
+Extracting service_latency_avg_ms...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_low_110_20260618_050551\service_latency_avg_ms.csv rows=1214
+Extracting cpu_usage_cores...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_low_110_20260618_050551\cpu_usage_cores.csv rows=1464
+Extracting memory_usage_bytes...
+Saved: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_low_110_20260618_050551\memory_usage_bytes.csv rows=1464
+Done.
+Files saved in: C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale\data\raw\prometheus_export\test_test_low_110_20260618_050551
+[OK] Complete: test_test_low_110_20260618_050551
+Waiting 30s before next scenario...
+
+====== Data Collection Complete ======
+Total successful: 27 / 27
+Total failed: 0 / 27
+
+Collected runs:
+  - train_low_load_5_ramp_20260618_002846
+  - train_med_load_10_ramp_20260618_003922
+  - train_med_high_15_ramp_20260618_005035
+  - train_high_load_20_ramp_20260618_010116
+  - train_peak_10_ramp_20260618_011152
+  - train_peak_20_ramp_20260618_012239
+  - train_sustained_250_20260618_013316
+  - train_low_slow_ramp_20260618_014357
+  - train_mid_stable_20260618_015434
+  - train_light_load_20260618_020512
+  - train_medium_fast_20260618_021549
+  - train_peak_moderate_20260618_022627
+  - train_varied_120_20260618_023703
+  - train_varied_180_20260618_024740
+  - train_high_aggressive_20260618_025816
+  - train_low_conservative_20260618_030853
+  - train_mid_push_20260618_031929
+  - train_balanced_160_20260618_033006
+  - train_extreme_320_20260618_034041
+  - train_light_90_20260618_035118
+  - train_high_240_20260618_040155
+  - train_peak_fast_ramp_20260618_041237
+  - test_test_hybrid_175_20260618_042314
+  - test_test_varied_260_20260618_043352
+  - test_test_medium_130_20260618_044434
+  - test_test_peak_290_20260618_045511
+  - test_test_low_110_20260618_050551
+
+Run manifest saved to: data/raw/prometheus_export/_run_manifest.txt
+
+Next steps:
+1. Run: python .\scripts\data_collection\merge_runs.py
+2. This will merge all train_* and test_* runs automatically
+3. Output will be in: data/processed/
+
+
+PS C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale>

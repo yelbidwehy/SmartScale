@@ -148,7 +148,7 @@ echo [8.1/12] Applying KEDA ScaledObject...
 kubectl apply -f "%KEDA_SCALEDOBJECT%" || exit /b 1
 
 echo Checking KEDA ScaledObject...
-kubectl get scaledobject frontend-predicted-rps-scaler -n default
+kubectl get scaledobject frontend-predicted-replicas-scaler -n default
 kubectl get hpa
 
 REM =========================================================

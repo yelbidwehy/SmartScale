@@ -7,8 +7,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY monitoring/predicted_metrics_exporter.py .
 COPY models ./models
-COPY data/processed/two_model_dataset ./data/processed/two_model_dataset
-COPY data/processed/model2_dataset_v2 ./data/processed/model2_dataset_v2
+COPY data/processed/model1_dataset ./data/processed/model1_dataset
+COPY data/processed/model2_dataset ./data/processed/model2_dataset
 
 EXPOSE 8000
 

@@ -1,7 +1,8 @@
-from locust import HttpUser, task, constant
-from locust.exception import StopUser
+from locust import HttpUser, task, constant,between
 import json
 import time
+import os
+import random
 from collections import defaultdict
 
 CHECKOUT_DATA = {
@@ -24,9 +25,17 @@ USER_WORKLOAD = defaultdict(list)
 for req in WORKLOAD:
     USER_WORKLOAD[req.get("user")].append(req)
 
+AVAILABLE_USERS = sorted(USER_WORKLOAD.keys())
+
+# Each worker pod gets a different seed so the 4 workers do not all replay
+# the exact same workload-user IDs in the same order.
+WORKER_NAME = os.environ.get("HOSTNAME", "locust-worker")
+WORKER_SEED = abs(hash(WORKER_NAME)) % 1000000
+random.seed(WORKER_SEED)
+
 
 class BoutiqueUser(HttpUser):
-    wait_time = constant(0)
+    wait_time = between(0.001, 0.01)  # 1-10ms between task checks
 
     def on_start(self):
         self.start_time = time.time()
@@ -37,12 +46,25 @@ class BoutiqueUser(HttpUser):
         self.user_id = self.environment.user_counter
         self.environment.user_counter += 1
 
-        self.my_workload = USER_WORKLOAD.get(self.user_id, [])
+        if not AVAILABLE_USERS:
+            self.my_workload = []
+            self.no_workload = True
+            print("No workload users found in boutique_workload_large.json")
+            return
+
+        # Random mapping is better with multiple workers because each worker has
+        # its own local user_counter. This avoids all workers only using user IDs 0..N.
+        self.mapped_user = random.choice(AVAILABLE_USERS)
+        self.my_workload = USER_WORKLOAD.get(self.mapped_user, [])
 
         self.index = 0
         self.no_workload = len(self.my_workload) == 0
 
-        print(f"User {self.user_id} loaded {len(self.my_workload)} requests")
+        print(
+            f"Worker {WORKER_NAME} | Locust user {self.user_id} "
+            f"mapped to workload user {self.mapped_user}, "
+            f"loaded {len(self.my_workload)} requests"
+        )
 
     @task
     def replay_workload(self):
@@ -76,3 +98,9 @@ class BoutiqueUser(HttpUser):
                 print(f"Request failed: {method} {url} - {e}")
 
             self.index += 1
+
+        # Repeat the same workload forever. This is important for long experiments
+        # where stage duration is longer than the original captured workload.
+        if self.index >= len(self.my_workload):
+            self.index = 0
+            self.start_time = time.time()

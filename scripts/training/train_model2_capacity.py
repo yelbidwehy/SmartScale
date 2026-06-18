@@ -11,7 +11,7 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-DATA_DIR = PROJECT_ROOT / "data" / "processed" / "model2_dataset_v2"
+DATA_DIR = PROJECT_ROOT / "data" / "processed" / "model2_dataset"
 MODEL_PATH = PROJECT_ROOT / "models" / "model2_capacity_nn_v2.pth"
 CHART_DIR = PROJECT_ROOT / "outputs" / "charts"
 EVAL_DIR = PROJECT_ROOT / "outputs" / "evaluations"

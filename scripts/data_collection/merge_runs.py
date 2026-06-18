@@ -1,4 +1,3 @@
-import re
 import pandas as pd
 from pathlib import Path
 
@@ -37,11 +36,12 @@ METRIC_RENAME = {
 }
 
 
-def extract_users_from_run_name(run_name: str):
-    match = re.search(r"run_(\d+)_users", run_name)
-    if match:
-        return int(match.group(1))
-    return None
+def extract_run_type(run_name: str):
+    if run_name.startswith("train_"):
+        return "train"
+    if run_name.startswith("test_"):
+        return "test"
+    return "unknown"
 
 
 def normalize_service_name(row):
@@ -69,10 +69,10 @@ def load_all_runs():
             continue
 
         run_name = run_path.name
-        users = extract_users_from_run_name(run_name)
+        run_type = extract_run_type(run_name)
 
-        if users is None:
-            print(f"Skipping {run_name}: invalid run name")
+        if run_type == "unknown":
+            print(f"Skipping {run_name}: run name must start with train_ or test_")
             continue
 
         combined_file = run_path / "combined_metrics.csv"
@@ -85,7 +85,7 @@ def load_all_runs():
 
         df = pd.read_csv(combined_file)
         df["run_name"] = run_name
-        df["users"] = users
+        df["run_type"] = run_type
 
         all_runs.append(df)
 
@@ -104,26 +104,20 @@ def main():
     merged_df = merged_df.sort_values(["run_name", "timestamp", "metric"])
     merged_df.to_csv(RAW_OUTPUT_FILE, index=False)
 
-    # =========================
-    # Frontend gateway load metrics
-    # =========================
     frontend_rps = (
         merged_df[merged_df["metric"] == "frontend_rps_total"]
-        .groupby(["run_name", "users", "timestamp"], as_index=False)["value"]
+        .groupby(["run_name", "run_type", "timestamp"], as_index=False)["value"]
         .mean()
         .rename(columns={"value": "frontend_rps"})
     )
 
     frontend_requests = (
         merged_df[merged_df["metric"] == "frontend_total_requests"]
-        .groupby(["run_name", "users", "timestamp"], as_index=False)["value"]
+        .groupby(["run_name", "run_type", "timestamp"], as_index=False)["value"]
         .mean()
         .rename(columns={"value": "frontend_total_requests_1m"})
     )
 
-    # =========================
-    # Per-service metrics
-    # =========================
     df = merged_df.copy()
     df["service"] = df.apply(normalize_service_name, axis=1)
     df = df[df["service"].isin(TARGET_SERVICES)].copy()
@@ -139,7 +133,7 @@ def main():
     service_metrics["metric"] = service_metrics["metric"].replace(METRIC_RENAME)
 
     service_wide = service_metrics.pivot_table(
-        index=["run_name", "users", "timestamp", "service"],
+        index=["run_name", "run_type", "timestamp", "service"],
         columns="metric",
         values="value",
         aggfunc="mean"
@@ -147,19 +141,18 @@ def main():
 
     cleaned_df = service_wide.merge(
         frontend_rps,
-        on=["run_name", "users", "timestamp"],
+        on=["run_name", "run_type", "timestamp"],
         how="left"
     )
 
     cleaned_df = cleaned_df.merge(
         frontend_requests,
-        on=["run_name", "users", "timestamp"],
+        on=["run_name", "run_type", "timestamp"],
         how="left"
     )
 
     cleaned_df = cleaned_df.sort_values(["run_name", "service", "timestamp"])
 
-    # Ensure expected columns exist
     expected_cols = [
         "frontend_rps",
         "frontend_total_requests_1m",
@@ -174,12 +167,10 @@ def main():
         if col not in cleaned_df.columns:
             cleaned_df[col] = pd.NA
 
-    # Missing flags before fill
     cleaned_df["service_rps_was_missing"] = cleaned_df["service_rps"].isna()
     cleaned_df["latency_avg_was_missing"] = cleaned_df["latency_avg_ms"].isna()
     cleaned_df["latency_p95_was_missing"] = cleaned_df["latency_p95_ms"].isna()
 
-    # Fill frontend metrics per run
     for col in ["frontend_rps", "frontend_total_requests_1m"]:
         cleaned_df[col] = (
             cleaned_df.groupby("run_name")[col]
@@ -187,7 +178,6 @@ def main():
             .fillna(0)
         )
 
-    # Fill service metrics per run + service
     for col in [
         "service_rps",
         "cpu_usage_cores",
@@ -201,14 +191,13 @@ def main():
             .fillna(0)
         )
 
-    # No frontend load means no meaningful request latency/RPS
     zero_load_mask = cleaned_df["frontend_rps"] == 0
     cleaned_df.loc[zero_load_mask, "service_rps"] = 0
     cleaned_df.loc[zero_load_mask, "latency_avg_ms"] = 0
     cleaned_df.loc[zero_load_mask, "latency_p95_ms"] = 0
 
     cleaned_df = cleaned_df.groupby(
-        ["run_name", "users", "timestamp", "service"],
+        ["run_name", "run_type", "timestamp", "service"],
         as_index=False
     ).agg({
         "frontend_rps": "mean",
@@ -231,6 +220,8 @@ def main():
             "raw_rows",
             "cleaned_rows",
             "runs",
+            "train_runs",
+            "test_runs",
             "services",
             "frontend_rps_zero_rows",
             "frontend_rps_min",
@@ -244,6 +235,8 @@ def main():
             len(merged_df),
             len(cleaned_df),
             cleaned_df["run_name"].nunique(),
+            cleaned_df[cleaned_df["run_type"] == "train"]["run_name"].nunique(),
+            cleaned_df[cleaned_df["run_type"] == "test"]["run_name"].nunique(),
             cleaned_df["service"].nunique(),
             int((cleaned_df["frontend_rps"] == 0).sum()),
             cleaned_df["frontend_rps"].min(),
@@ -262,6 +255,9 @@ def main():
     print(f"Saved cleaned dataset: {CLEAN_OUTPUT_FILE}")
     print(f"Saved cleaning report: {REPORT_FILE}")
     print(f"Cleaned rows: {len(cleaned_df)}")
+    print(f"Runs: {cleaned_df['run_name'].nunique()}")
+    print(f"Train runs: {cleaned_df[cleaned_df['run_type'] == 'train']['run_name'].nunique()}")
+    print(f"Test runs: {cleaned_df[cleaned_df['run_type'] == 'test']['run_name'].nunique()}")
     print(f"Frontend RPS zero rows: {(cleaned_df['frontend_rps'] == 0).sum()}")
     print(f"Frontend RPS min: {cleaned_df['frontend_rps'].min()}")
     print(f"Frontend RPS max: {cleaned_df['frontend_rps'].max()}")

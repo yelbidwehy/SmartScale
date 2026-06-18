@@ -5,9 +5,11 @@ metadata:
   namespace: default
 data:
   locustfile.py: |
-    from locust import HttpUser, task, constant
+    from locust import HttpUser, task, constant,between
     import json
     import time
+    import os
+    import random
     from collections import defaultdict
 
     CHECKOUT_DATA = {
@@ -30,10 +32,15 @@ data:
     for req in WORKLOAD:
         USER_WORKLOAD[req.get("user")].append(req)
 
-    AVAILABLE_USERS = list(USER_WORKLOAD.keys())
+    AVAILABLE_USERS = sorted(USER_WORKLOAD.keys())
+
+    WORKER_NAME = os.environ.get("HOSTNAME", "locust-worker")
+    WORKER_SEED = abs(hash(WORKER_NAME)) % 1000000
+    random.seed(WORKER_SEED)
+
 
     class BoutiqueUser(HttpUser):
-        wait_time = constant(0)
+        wait_time = between(0.001, 0.01)  # 1-10ms between task checks
 
         def on_start(self):
             self.start_time = time.time()
@@ -44,50 +51,56 @@ data:
             self.user_id = self.environment.user_counter
             self.environment.user_counter += 1
 
-            mapped_user = AVAILABLE_USERS[self.user_id % len(AVAILABLE_USERS)]
-            self.my_workload = USER_WORKLOAD.get(mapped_user, [])
+            if not AVAILABLE_USERS:
+                self.my_workload = []
+                self.no_workload = True
+                print("No workload users found in boutique_workload_large.json")
+                return
+
+            self.mapped_user = random.choice(AVAILABLE_USERS)
+            self.my_workload = USER_WORKLOAD.get(self.mapped_user, [])
 
             self.index = 0
+            self.no_workload = len(self.my_workload) == 0
 
             print(
-                f"Locust user {self.user_id} mapped to workload user {mapped_user}, "
+                f"Worker {WORKER_NAME} | Locust user {self.user_id} "
+                f"mapped to workload user {self.mapped_user}, "
                 f"loaded {len(self.my_workload)} requests"
             )
 
         @task
         def replay_workload(self):
-            if len(self.my_workload) == 0:
+            if self.no_workload:
                 return
 
-            now = time.time() - self.start_time
-
-            while self.index < len(self.my_workload):
-                req = self.my_workload[self.index]
-
-                if req["time"] > now:
-                    break
-
-                method = req.get("method", "GET").upper()
-                url = req.get("url", "/")
-                data = req.get("data", {}) or {}
-
-                if "checkout" in url and url.endswith("/"):
-                    url = url[:-1]
-
-                if method == "POST" and "checkout" in url:
-                    data = CHECKOUT_DATA
-
-                try:
-                    if method == "GET":
-                        self.client.get(url, name=url)
-                    elif method == "POST":
-                        self.client.post(url, data=data, name=url)
-                except Exception as e:
-                    print(f"Request failed: {method} {url} - {e}")
-
-                self.index += 1
-
-            # Repeat the same user workload forever
             if self.index >= len(self.my_workload):
                 self.index = 0
                 self.start_time = time.time()
+                return
+
+            now = time.time() - self.start_time
+            req = self.my_workload[self.index]
+
+            if req["time"] > now:
+                return
+
+            method = req.get("method", "GET").upper()
+            url = req.get("url", "/")
+            data = req.get("data", {}) or {}
+
+            if "checkout" in url and url.endswith("/"):
+                url = url[:-1]
+
+            if method == "POST" and "checkout" in url:
+                data = CHECKOUT_DATA
+
+            try:
+                if method == "GET":
+                    self.client.get(url, name=url)
+                elif method == "POST":
+                    self.client.post(url, data=data, name=url)
+            except Exception as e:
+                print(f"Request failed: {method} {url} - {e}")
+
+            self.index += 1

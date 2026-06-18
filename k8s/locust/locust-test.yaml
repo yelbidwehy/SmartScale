@@ -3,11 +3,15 @@ kind: LocustTest
 metadata:
   name: online-boutique-test
   namespace: default
+  annotations:
+    sidecar.istio.io/inject: "false"
+
 spec:
   image: locust-boutique-custom:1.0
   imagePullPolicy: Never
   workers: 2
   args: "--host http://istio-gateway-istio.default.svc.cluster.local"
+
   locustfile:
     configMap:
       name: locust-script
@@ -15,11 +19,11 @@ spec:
   master:
     resources:
       requests:
-        cpu: "500m"
-        memory: "512Mi"
-      limits:
-        cpu: "1"
+        cpu: "2000m"
         memory: "1Gi"
+      limits:
+        cpu: "4000m"
+        memory: "4Gi"
 
   worker:
     resources:

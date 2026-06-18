@@ -9,7 +9,7 @@ spec:
     - ReadOnlyMany
   persistentVolumeReclaimPolicy: Retain
   hostPath:
-    path: /run/desktop/mnt/host/c/Users/yelbidwehy/OneDrive - Elm/MyFiles/MasterCairo/SecondYear/Term2/GradeProject/start/microservices-demo/release
+    path: "/run/desktop/mnt/host/c/Users/yelbidwehy/OneDrive - Elm/MyFiles/MasterCairo/SecondYear/Term2/GradeProject/start/microservices-demo/release"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

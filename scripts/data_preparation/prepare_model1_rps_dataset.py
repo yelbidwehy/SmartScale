@@ -11,30 +11,19 @@ import joblib
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 INPUT_FILE = PROJECT_ROOT / "data" / "processed" / "smartscale_training_dataset_cleaned.csv"
-OUTPUT_DIR = (
-    PROJECT_ROOT / "data" / "processed" / "two_model_dataset" / "model1_rps_forecast"
-)
+
+OUTPUT_DIR = PROJECT_ROOT / "data" / "processed" / "model1_dataset"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # =========================================================
 # Config
 # =========================================================
 
-# FIX: comment corrected from "24 × 5s = 120s" — 12 × 5s = 60 seconds of history.
-WINDOW_SIZE = 12      # 12 rows × 5s = 60 seconds of history
-PREDICT_STEP = 6      # 6 rows × 5s  = predict 30 seconds ahead
+WINDOW_SIZE = 12      # 12 rows × 5s = 60 seconds history
+PREDICT_STEP = 6      # 6 rows × 5s = predict 30 seconds ahead
 TARGET_COLUMN = "frontend_rps"
 
-# Runs used for training. The remaining run(s) become the held-out test set.
-# FIX: scaler was previously fit on the entire dataset before any split,
-# leaking test-set statistics into the scaler.
-TRAIN_RUNS = ["run_100_users", "run_200_users", "run_300_users"]
-TEST_RUNS  = ["run_400_users"]
-
-# Minimum interval between consecutive timestamps (seconds).
-# Used to validate that no gap exists in each run's time series.
 EXPECTED_INTERVAL_S = 5
-
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # =========================================================
@@ -44,56 +33,64 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 def load_and_prepare_data() -> pd.DataFrame:
     df = pd.read_csv(INPUT_FILE)
 
+    required_cols = ["timestamp", "run_name", "run_type", "frontend_rps"]
+
+    missing_cols = [col for col in required_cols if col not in df.columns]
+    if missing_cols:
+        raise ValueError(f"Missing required column(s): {missing_cols}")
+
     df["timestamp"] = pd.to_datetime(df["timestamp"])
     df["frontend_rps"] = pd.to_numeric(df["frontend_rps"], errors="coerce")
 
-    df = df.dropna(subset=["timestamp", "run_name", "frontend_rps"])
+    df = df.dropna(subset=["timestamp", "run_name", "run_type", "frontend_rps"])
 
-    # Remove zero-load rows (warmup / stop / idle).
+    # Remove zero-load rows: warmup / stop / idle
     df = df[df["frontend_rps"] > 0].copy()
 
-    # The cleaned dataset has one row per *service* per timestamp.
-    # Model 1 only needs one global frontend RPS per timestamp/run.
-    # In most timestamps frontend_rps is identical across all services,
-    # but the first 15 timestamps of run_100_users show cross-service
-    # variation (std up to 1.12) because adservice reports a different
-    # value during warm-up. Averaging those rows silently mixes a
-    # warm-up artefact into the series.
-    #
-    # FIX: detect and drop any timestamp where frontend_rps is not
-    # consistent across services (std > threshold), then take the mean
-    # of the remaining uniform timestamps.
+    # Cleaned dataset has one row per service per timestamp.
+    # Model 1 needs one global frontend RPS per timestamp/run.
     std_per_ts = (
-        df.groupby(["run_name", "timestamp"])["frontend_rps"]
+        df.groupby(["run_name", "run_type", "timestamp"])["frontend_rps"]
         .std()
         .reset_index(name="rps_std")
     )
 
     warmup_mask = std_per_ts["rps_std"] > 0.01
-    n_warmup = warmup_mask.sum()
+    n_warmup = int(warmup_mask.sum())
+
     if n_warmup > 0:
-        warmup_detail = std_per_ts.loc[warmup_mask, ["run_name", "rps_std"]]
+        warmup_detail = std_per_ts.loc[warmup_mask, ["run_name", "run_type", "rps_std"]]
         print(
-            f"Dropping {n_warmup} warm-up timestamp(s) where frontend_rps "
-            f"differs across services:\n{warmup_detail.to_string(index=False)}"
+            f"Dropping {n_warmup} timestamp(s) where frontend_rps differs across services:\n"
+            f"{warmup_detail.to_string(index=False)}"
         )
 
-    valid_ts = std_per_ts.loc[~warmup_mask, ["run_name", "timestamp"]]
-    df = df.merge(valid_ts, on=["run_name", "timestamp"], how="inner")
+    valid_ts = std_per_ts.loc[
+        ~warmup_mask,
+        ["run_name", "run_type", "timestamp"]
+    ]
+
+    df = df.merge(
+        valid_ts,
+        on=["run_name", "run_type", "timestamp"],
+        how="inner"
+    )
 
     rps_df = (
-        df.groupby(["run_name", "users", "timestamp"], as_index=False)["frontend_rps"]
+        df.groupby(["run_name", "run_type", "timestamp"], as_index=False)[TARGET_COLUMN]
         .mean()
     )
 
     rps_df = rps_df.sort_values(["run_name", "timestamp"]).reset_index(drop=True)
 
-    # Forward/back fill only to handle any isolated NaNs that survive groupby;
-    # after the warm-up filter above these should be extremely rare.
-    nan_before = rps_df["frontend_rps"].isna().sum()
-    rps_df["frontend_rps"] = rps_df["frontend_rps"].ffill().bfill().fillna(0)
+    nan_before = int(rps_df[TARGET_COLUMN].isna().sum())
+    rps_df[TARGET_COLUMN] = (
+        rps_df.groupby("run_name")[TARGET_COLUMN]
+        .transform(lambda s: s.ffill().bfill().fillna(0))
+    )
+
     if nan_before > 0:
-        print(f"WARNING: filled {nan_before} NaN value(s) in frontend_rps.")
+        print(f"WARNING: filled {nan_before} NaN value(s) in {TARGET_COLUMN}.")
 
     return rps_df
 
@@ -103,7 +100,8 @@ def load_and_prepare_data() -> pd.DataFrame:
 # =========================================================
 
 def validate_intervals(df: pd.DataFrame) -> None:
-    """Assert that every run has perfectly uniform 5-second timestamps."""
+    runs_with_gaps = []
+
     for run_name, group in df.groupby("run_name"):
         diffs = (
             group["timestamp"]
@@ -112,14 +110,19 @@ def validate_intervals(df: pd.DataFrame) -> None:
             .dt.total_seconds()
             .dropna()
         )
+
         bad = diffs[diffs != EXPECTED_INTERVAL_S]
+
         if not bad.empty:
-            raise ValueError(
-                f"Irregular timestamp intervals in {run_name}: "
-                f"{bad.unique()} seconds (expected {EXPECTED_INTERVAL_S}s). "
-                "Check the source data for gaps or duplicates."
-            )
-    print("Timestamp interval validation passed — all runs have 5-second spacing.")
+            runs_with_gaps.append((run_name, bad.value_counts().to_dict()))
+
+    if runs_with_gaps:
+        print("WARNING: irregular timestamp gaps detected after filtering zero-load rows.")
+        for run_name, gap_counts in runs_with_gaps:
+            print(f"  {run_name}: {gap_counts}")
+        print("Sequences will be created only within contiguous 5-second segments.")
+    else:
+        print("Timestamp interval validation passed — all runs have 5-second spacing.")
 
 
 # =========================================================
@@ -127,31 +130,42 @@ def validate_intervals(df: pd.DataFrame) -> None:
 # =========================================================
 
 def create_sequences_by_run(
-    df: pd.DataFrame, scaler: MinMaxScaler
+    df: pd.DataFrame,
+    scaler: MinMaxScaler
 ) -> tuple[np.ndarray, np.ndarray]:
-    X_all: list = []
-    y_all: list = []
+
+    X_all = []
+    y_all = []
 
     for run_name, group in df.groupby("run_name"):
-        group = group.sort_values("timestamp")
+        group = group.sort_values("timestamp").copy()
+        group["segment_id"] = (
+            group["timestamp"]
+            .diff()
+            .dt.total_seconds()
+            .fillna(EXPECTED_INTERVAL_S)
+            .ne(EXPECTED_INTERVAL_S)
+            .cumsum()
+        )
 
-        values = group[[TARGET_COLUMN]].values
-        scaled_values = scaler.transform(values)
+        for segment_id, segment in group.groupby("segment_id"):
+            values = segment[[TARGET_COLUMN]].values
+            scaled_values = scaler.transform(values)
 
-        max_i = len(scaled_values) - WINDOW_SIZE - PREDICT_STEP + 1
+            max_i = len(scaled_values) - WINDOW_SIZE - PREDICT_STEP + 1
 
-        if max_i <= 0:
-            print(f"Skipping {run_name}: only {len(scaled_values)} rows, "
-                  f"need at least {WINDOW_SIZE + PREDICT_STEP}.")
-            continue
+            if max_i <= 0:
+                print(
+                    f"Skipping {run_name} segment {segment_id}: only {len(scaled_values)} rows, "
+                    f"need at least {WINDOW_SIZE + PREDICT_STEP}."
+                )
+                continue
 
-        for i in range(max_i):
-            X_all.append(scaled_values[i : i + WINDOW_SIZE])
-            # FIX: named variable clarifies the off-by-one intent.
-            # target_idx is the row that is PREDICT_STEP steps beyond the
-            # end of the input window — i.e. 30 seconds into the future.
-            target_idx = i + WINDOW_SIZE + PREDICT_STEP - 1
-            y_all.append(scaled_values[target_idx, 0])
+            for i in range(max_i):
+                X_all.append(scaled_values[i: i + WINDOW_SIZE])
+
+                target_idx = i + WINDOW_SIZE + PREDICT_STEP - 1
+                y_all.append(scaled_values[target_idx, 0])
 
     return np.array(X_all), np.array(y_all).reshape(-1, 1)
 
@@ -165,79 +179,72 @@ def main() -> None:
 
     validate_intervals(rps_df)
 
-    # -------------------------------------------------------
-    # Train / test split — by run, not by row.
-    # FIX: splitting after fitting the scaler on the full
-    # dataset caused test-set leakage. Scaler is now fit only
-    # on training runs.
-    # -------------------------------------------------------
-    all_runs = sorted(rps_df["run_name"].unique().tolist())
-    unrecognised = set(all_runs) - set(TRAIN_RUNS) - set(TEST_RUNS)
-    if unrecognised:
+    if "run_type" not in rps_df.columns:
+        raise ValueError("Missing run_type after preparation. Cannot split train/test.")
+
+    run_type_values = sorted(rps_df["run_type"].astype(str).str.lower().unique().tolist())
+    expected_types = {"train", "test"}
+
+    if not expected_types.issubset(set(run_type_values)):
         raise ValueError(
-            f"Found run(s) not assigned to TRAIN_RUNS or TEST_RUNS: {unrecognised}. "
-            "Update the TRAIN_RUNS / TEST_RUNS constants."
+            f"Expected run_type to include {expected_types}, found: {run_type_values}"
         )
 
-    train_df = rps_df[rps_df["run_name"].isin(TRAIN_RUNS)].copy()
-    test_df  = rps_df[rps_df["run_name"].isin(TEST_RUNS)].copy()
+    train_df = rps_df[rps_df["run_type"].astype(str).str.lower() == "train"].copy()
+    test_df = rps_df[rps_df["run_type"].astype(str).str.lower() == "test"].copy()
 
-    print(f"\nTrain runs : {TRAIN_RUNS}  ({len(train_df)} rows)")
-    print(f"Test  runs : {TEST_RUNS}   ({len(test_df)} rows)")
+    train_runs = sorted(train_df["run_name"].unique().tolist())
+    test_runs = sorted(test_df["run_name"].unique().tolist())
 
-    # Fit scaler exclusively on training data.
+    if train_df.empty:
+        raise ValueError("Training dataframe is empty. Check TRAIN_RUNS.")
+
+    if test_df.empty:
+        raise ValueError("Test dataframe is empty. Check TEST_RUNS.")
+
+    print(f"\nTrain runs count : {len(train_runs)}  ({len(train_df)} rows)")
+    print(f"Test  runs count : {len(test_runs)}   ({len(test_df)} rows)")
+
     scaler = MinMaxScaler()
     scaler.fit(train_df[[TARGET_COLUMN]].values)
+
     print(
         f"Scaler fit on train — "
         f"min={scaler.data_min_[0]:.4f}, max={scaler.data_max_[0]:.4f}"
     )
 
-    # Warn if the test set exceeds the training range (extrapolation risk).
     test_max = test_df[TARGET_COLUMN].max()
     test_min = test_df[TARGET_COLUMN].min()
+
     if test_max > scaler.data_max_[0]:
         print(
-            f"WARNING: test set max RPS ({test_max:.4f}) exceeds training max "
-            f"({scaler.data_max_[0]:.4f}) — MinMaxScaler will clamp to 1.0."
+            f"WARNING: test max RPS ({test_max:.4f}) exceeds training max "
+            f"({scaler.data_max_[0]:.4f})."
         )
+
     if test_min < scaler.data_min_[0]:
         print(
-            f"WARNING: test set min RPS ({test_min:.4f}) is below training min "
-            f"({scaler.data_min_[0]:.4f}) — MinMaxScaler will clamp to 0.0."
+            f"WARNING: test min RPS ({test_min:.4f}) is below training min "
+            f"({scaler.data_min_[0]:.4f})."
         )
 
-    # -------------------------------------------------------
-    # Build sequences for train and test separately.
-    # -------------------------------------------------------
     X_train, y_train = create_sequences_by_run(train_df, scaler)
-    X_test,  y_test  = create_sequences_by_run(test_df,  scaler)
+    X_test, y_test = create_sequences_by_run(test_df, scaler)
 
-    # -------------------------------------------------------
-    # Save outputs.
-    # -------------------------------------------------------
     rps_df.to_csv(OUTPUT_DIR / "model1_rps_dataset.csv", index=False)
     train_df.to_csv(OUTPUT_DIR / "model1_rps_train.csv", index=False)
-    test_df.to_csv(OUTPUT_DIR / "model1_rps_test.csv",  index=False)
+    test_df.to_csv(OUTPUT_DIR / "model1_rps_test.csv", index=False)
 
     np.save(OUTPUT_DIR / "X_train.npy", X_train)
     np.save(OUTPUT_DIR / "y_train.npy", y_train)
-    np.save(OUTPUT_DIR / "X_test.npy",  X_test)
-    np.save(OUTPUT_DIR / "y_test.npy",  y_test)
-
-    # Keep legacy filenames so downstream scripts don't break immediately;
-    # they point to training data only (the most common use case).
-    np.save(OUTPUT_DIR / "X_rps.npy", X_train)
-    np.save(OUTPUT_DIR / "y_rps.npy", y_train)
+    np.save(OUTPUT_DIR / "X_test.npy", X_test)
+    np.save(OUTPUT_DIR / "y_test.npy", y_test)
 
     joblib.dump(scaler, OUTPUT_DIR / "rps_scaler.pkl")
 
     with open(OUTPUT_DIR / "feature_columns.txt", "w") as f:
         f.write(TARGET_COLUMN + "\n")
 
-    # -------------------------------------------------------
-    # Summary
-    # -------------------------------------------------------
     print("\n" + "=" * 60)
     print("Model 1 RPS dataset created successfully.")
     print(f"Input file            : {INPUT_FILE}")

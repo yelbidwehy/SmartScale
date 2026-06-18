@@ -4,14 +4,15 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 import joblib
 import pandas as pd
+import random
 
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error, mean_squared_error
+
+from sklearn.metrics import mean_absolute_error, mean_squared_error , r2_score
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-DATA_DIR = PROJECT_ROOT / "data" / "processed" / "two_model_dataset" / "model1_rps_forecast"
+DATA_DIR = PROJECT_ROOT / "data" / "processed" / "model1_dataset" 
 MODEL_PATH = PROJECT_ROOT / "models" / "model1_rps_lstm.pth"
 CHART_DIR = PROJECT_ROOT / "outputs" / "charts"
 EVAL_DIR = PROJECT_ROOT / "outputs" / "evaluations"
@@ -23,49 +24,84 @@ EVAL_DIR.mkdir(parents=True, exist_ok=True)
 EPOCHS = 150
 LEARNING_RATE = 0.001
 PATIENCE = 15
+VAL_SPLIT = 0.2
+BATCH_SIZE = 64
+WEIGHT_DECAY = 1e-5
+GRAD_CLIP_NORM = 1.0
 
-X = np.load(DATA_DIR / "X_rps.npy")
-y = np.load(DATA_DIR / "y_rps.npy")
+SEED = 42
+random.seed(SEED)
+np.random.seed(SEED)
+torch.manual_seed(SEED)
+
+X_train_np = np.load(DATA_DIR / "X_train.npy")
+y_train_np = np.load(DATA_DIR / "y_train.npy")
+X_test_np = np.load(DATA_DIR / "X_test.npy")
+y_test_np = np.load(DATA_DIR / "y_test.npy")
 
 rps_scaler = joblib.load(DATA_DIR / "rps_scaler.pkl")
 
 print("Dataset loaded")
-print(f"X shape: {X.shape}")
-print(f"y shape: {y.shape}")
+print(f"X_train shape: {X_train_np.shape}")
+print(f"y_train shape: {y_train_np.shape}")
+print(f"X_test shape : {X_test_np.shape}")
+print(f"y_test shape : {y_test_np.shape}")
 
-indices = np.arange(len(X))
+if X_train_np.size == 0 or X_test_np.size == 0:
+    raise ValueError(
+        "Train/test arrays are empty. Run prepare_model1_rps_dataset.py first "
+        "and check TRAIN_RUNS / TEST_RUNS."
+    )
 
-X_train, X_test, y_train, y_test, idx_train, idx_test = train_test_split(
-    X,
-    y,
-    indices,
-    test_size=0.2,
-    shuffle=True,
-    random_state=42
-)
+idx_test = np.arange(len(X_test_np))
 
-X_train = torch.tensor(X_train, dtype=torch.float32)
-y_train = torch.tensor(y_train, dtype=torch.float32)
-X_test = torch.tensor(X_test, dtype=torch.float32)
-y_test = torch.tensor(y_test, dtype=torch.float32)
+if len(X_train_np) < 10:
+    raise ValueError("Training set is too small to create a validation split safely.")
+
+split_index = int(len(X_train_np) * (1 - VAL_SPLIT))
+
+if split_index <= 0 or split_index >= len(X_train_np):
+    raise ValueError("Invalid validation split for current training set size.")
+
+X_fit_np = X_train_np[:split_index]
+X_val_np = X_train_np[split_index:]
+y_fit_np = y_train_np[:split_index]
+y_val_np = y_train_np[split_index:]
+
+print("Validation strategy: chronological holdout from training sequences")
+
+print(f"X_fit shape  : {X_fit_np.shape}")
+print(f"y_fit shape  : {y_fit_np.shape}")
+print(f"X_val shape  : {X_val_np.shape}")
+print(f"y_val shape  : {y_val_np.shape}")
+
+X_fit = torch.tensor(X_fit_np, dtype=torch.float32)
+y_fit = torch.tensor(y_fit_np, dtype=torch.float32)
+X_val = torch.tensor(X_val_np, dtype=torch.float32)
+y_val = torch.tensor(y_val_np, dtype=torch.float32)
+X_test = torch.tensor(X_test_np, dtype=torch.float32)
+y_test = torch.tensor(y_test_np, dtype=torch.float32)
 
 
 class RPSLSTMModel(nn.Module):
-    def __init__(self, input_size=1, hidden_size=64, num_layers=2, dropout=0.2):
+    def __init__(self, input_size=1, hidden_size=64, num_layers=1, dropout=0.2):
         super().__init__()
 
         self.lstm = nn.LSTM(
             input_size=input_size,
             hidden_size=hidden_size,
             num_layers=num_layers,
-            dropout=dropout if num_layers > 1 else 0,
+            dropout=dropout if num_layers > 1 else 0.0,
             batch_first=True
         )
 
         self.fc = nn.Sequential(
             nn.Linear(hidden_size, 32),
             nn.ReLU(),
-            nn.Linear(32, 1)
+            nn.Dropout(dropout),
+            nn.Linear(32, 16),
+            nn.ReLU(),
+            nn.Linear(16, 1)
         )
 
     def forward(self, x):
@@ -74,38 +110,58 @@ class RPSLSTMModel(nn.Module):
         return self.fc(out)
 
 
-model = RPSLSTMModel(input_size=1)
+model = RPSLSTMModel(
+    input_size=1,
+    hidden_size=64,
+    num_layers=1,
+    dropout=0.2
+)
 
-criterion = nn.MSELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+criterion = nn.SmoothL1Loss()
+optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
+
+train_dataset = torch.utils.data.TensorDataset(X_fit, y_fit)
+train_loader = torch.utils.data.DataLoader(
+    train_dataset,
+    batch_size=BATCH_SIZE,
+    shuffle=False
+)
 
 train_losses = []
-test_losses = []
+val_losses = []
 
-best_test_loss = float("inf")
+best_val_loss = float("inf")
 best_state = None
 patience_counter = 0
 
 for epoch in range(EPOCHS):
     model.train()
-    optimizer.zero_grad()
+    running_loss = 0.0
 
-    outputs = model(X_train)
-    loss = criterion(outputs, y_train)
+    for X_batch, y_batch in train_loader:
+        optimizer.zero_grad()
 
-    loss.backward()
-    optimizer.step()
+        outputs = model(X_batch)
+        loss = criterion(outputs, y_batch)
+
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), GRAD_CLIP_NORM)
+        optimizer.step()
+
+        running_loss += loss.item() * len(X_batch)
+
+    epoch_train_loss = running_loss / len(train_dataset)
 
     model.eval()
     with torch.no_grad():
-        test_outputs = model(X_test)
-        test_loss = criterion(test_outputs, y_test)
+        val_outputs = model(X_val)
+        val_loss = criterion(val_outputs, y_val)
 
-    train_losses.append(loss.item())
-    test_losses.append(test_loss.item())
+    train_losses.append(epoch_train_loss)
+    val_losses.append(val_loss.item())
 
-    if test_loss.item() < best_test_loss:
-        best_test_loss = test_loss.item()
+    if val_loss.item() < best_val_loss:
+        best_val_loss = val_loss.item()
         best_state = {k: v.cpu().clone() for k, v in model.state_dict().items()}
         patience_counter = 0
     else:
@@ -113,8 +169,8 @@ for epoch in range(EPOCHS):
 
     print(
         f"Epoch {epoch + 1}/{EPOCHS} | "
-        f"Train Loss: {loss.item():.4f} | "
-        f"Test Loss: {test_loss.item():.4f}"
+        f"Train Loss: {epoch_train_loss:.4f} | "
+        f"Val Loss: {val_loss.item():.4f}"
     )
 
     if patience_counter >= PATIENCE:
@@ -126,11 +182,11 @@ if best_state is not None:
 
 torch.save(model.state_dict(), MODEL_PATH)
 print(f"\nModel saved: {MODEL_PATH}")
-print(f"Best test loss: {best_test_loss:.6f}")
+print(f"Best val loss: {best_val_loss:.6f}")
 
 plt.figure(figsize=(10, 5))
 plt.plot(train_losses, label="Train Loss")
-plt.plot(test_losses, label="Test Loss")
+plt.plot(val_losses, label="Val Loss")
 plt.title("Model 1 - RPS Forecasting Loss")
 plt.xlabel("Epoch")
 plt.ylabel("MSE Loss")
@@ -154,9 +210,14 @@ pred_real = np.clip(pred_real, 0, None)
 mae = mean_absolute_error(actual_real, pred_real)
 rmse = np.sqrt(mean_squared_error(actual_real, pred_real))
 
+r2 = r2_score(actual_real, pred_real)
+
+
 print("\nModel 1 Evaluation:")
 print(f"MAE  : {mae:.2f} RPS")
 print(f"RMSE : {rmse:.2f} RPS")
+
+print(f"R2   : {r2:.4f}")
 
 eval_df = pd.DataFrame({
     "sample_index": idx_test,
@@ -170,8 +231,8 @@ eval_df["squared_error"] = eval_df["absolute_error"] ** 2
 eval_df.to_csv(EVAL_DIR / "model1_rps_evaluation.csv", index=False)
 
 summary_df = pd.DataFrame({
-    "metric": ["mae_rps", "rmse_rps", "best_test_loss", "samples"],
-    "value": [mae, rmse, best_test_loss, len(eval_df)]
+    "metric": ["mae_rps", "rmse_rps", "r2", "best_val_loss", "samples"],
+    "value": [mae, rmse, r2, best_val_loss, len(eval_df)]
 })
 
 summary_df.to_csv(EVAL_DIR / "model1_rps_summary.csv", index=False)

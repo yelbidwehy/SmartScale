@@ -33,8 +33,8 @@ if os.name != "nt" and Path("/app").exists():
 else:
     PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-MODEL1_DIR = PROJECT_ROOT / "data" / "processed" / "two_model_dataset" / "model1_rps_forecast"
-MODEL2_DIR = PROJECT_ROOT / "data" / "processed" / "model2_dataset_v2"
+MODEL1_DIR = PROJECT_ROOT / "data" / "processed" / "two_model_dataset" 
+MODEL2_DIR = PROJECT_ROOT / "data" / "processed" / "model2_dataset"
 
 MODEL1_PATH = PROJECT_ROOT / "models" / "model1_rps_lstm.pth"
 MODEL2_PATH = PROJECT_ROOT / "models" / "model2_capacity_nn_v2.pth"
@@ -58,7 +58,7 @@ MAX_REPLICAS = 10
 SMOOTHING_ALPHA = 0.3
 SCALE_DOWN_COOLDOWN_SECONDS = 60
 
-TRAINING_MAX_RPS = 63.1166
+TRAINING_MAX_RPS = 125.0
 
 SERVICES = [
     "adservice",

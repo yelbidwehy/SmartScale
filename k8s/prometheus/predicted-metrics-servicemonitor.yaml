@@ -8,7 +8,7 @@ metadata:
 spec:
   namespaceSelector:
     matchNames:
-      - monitoring   # ✅ FIX HERE
+      - monitoring   
   selector:
     matchLabels:
       app: predicted-metrics-exporter

@@ -12,7 +12,7 @@ import joblib
 BASE_DIR = Path(__file__).resolve().parents[2]
 
 INPUT_FILE = BASE_DIR / "data" / "processed" / "smartscale_training_dataset_cleaned.csv"
-OUTPUT_DIR = BASE_DIR / "data" / "processed" / "model2_dataset_v2"
+OUTPUT_DIR = BASE_DIR / "data" / "processed" / "model2_dataset"
 
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -31,9 +31,15 @@ PREDICTION_HORIZON_STEPS = 6   # 6 × 5s = 30 seconds ahead
 # Runs used for training. The remaining run(s) form the held-out test set.
 # FIX: scalers were previously fit on the full dataset before any split,
 # leaking test-set statistics into both the input and output scalers.
-TRAIN_RUNS = ["run_100_users", "run_200_users", "run_300_users"]
-TEST_RUNS  = ["run_400_users"]
+TRAIN_RUNS = [
+    "ramp_up_20_120",
+    "ramp_down_120_20",
+    "spike_train_20_120_40",
+]
 
+TEST_RUNS = [
+    "spike_test_30_120_50",
+]
 # Warm-up detection threshold: timestamps where frontend_rps std across
 # services exceeds this value are treated as warm-up and dropped.
 WARMUP_STD_THRESHOLD = 0.01
@@ -210,7 +216,7 @@ def main() -> None:
     df = pd.concat([df, service_dummies], axis=1)
 
     feature_columns = [
-        "predicted_rps",
+        #"predicted_rps",
         "frontend_rps",
         "service_rps",
         "rps_lag_1",
@@ -221,7 +227,8 @@ def main() -> None:
         "cpu_usage_cores",
         "memory_usage_bytes",
         "latency_p95_ms",
-        "latency_avg_ms",
+        "latency_avg_ms"
+        
     ] + list(service_dummies.columns)
 
     df[feature_columns] = (

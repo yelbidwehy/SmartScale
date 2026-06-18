@@ -12,6 +12,11 @@ parser.add_argument("--start", help="Start time (YYYY-MM-DD HH:MM:SS)")
 parser.add_argument("--end", help="End time (YYYY-MM-DD HH:MM:SS)")
 parser.add_argument("--run-name", default="run_1", help="Folder name for this experiment")
 parser.add_argument("--step", default="5s", help="Prometheus query step, example: 5s, 15s, 30s")
+parser.add_argument(
+  "--rate-window",
+  default="1m",
+  help="Prometheus range selector window for rate/increase queries, example: 30s, 1m"
+)
 
 args = parser.parse_args()
 
@@ -23,6 +28,7 @@ else:
     START_TIME = END_TIME - timedelta(minutes=30)
 
 STEP = args.step
+RATE_WINDOW = args.rate_window
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 OUTPUT_DIR = BASE_DIR / "data" / "raw" / "prometheus_export" / args.run_name
@@ -32,6 +38,7 @@ print("Using time range:")
 print(f"Start : {START_TIME}")
 print(f"End   : {END_TIME}")
 print(f"Step  : {STEP}")
+print(f"Rate window: {RATE_WINDOW}")
 print(f"Output: {OUTPUT_DIR}")
 
 COMMON_ISTIO_FILTER = """
@@ -41,26 +48,26 @@ destination_workload!~"unknown|online-boutique-test.*|istio-gateway-istio"
 """
 
 QUERIES = {
-    "frontend_total_requests": """
+    "frontend_total_requests": f"""
 sum(
   increase(
-    istio_requests_total{
+    istio_requests_total{{
       reporter="source",
       source_workload="istio-gateway-istio",
       destination_workload="frontend"
-    }[1m]
+    }}[{RATE_WINDOW}]
   )
 )
 """,
 
-    "frontend_rps_total": """
+    "frontend_rps_total": f"""
 sum(
   rate(
-    istio_requests_total{
+    istio_requests_total{{
       reporter="source",
       source_workload="istio-gateway-istio",
       destination_workload="frontend"
-    }[1m]
+    }}[{RATE_WINDOW}]
   )
 )
 """,
@@ -70,7 +77,7 @@ sum by (destination_workload) (
   rate(
     istio_requests_total{{
       {COMMON_ISTIO_FILTER}
-    }}[1m]
+    }}[{RATE_WINDOW}]
   )
 )
 """,
@@ -82,7 +89,7 @@ histogram_quantile(
     rate(
       istio_request_duration_milliseconds_bucket{{
         {COMMON_ISTIO_FILTER}
-      }}[1m]
+      }}[{RATE_WINDOW}]
     )
   )
 )
@@ -93,7 +100,7 @@ sum by (destination_workload) (
   rate(
     istio_request_duration_milliseconds_sum{{
       {COMMON_ISTIO_FILTER}
-    }}[1m]
+    }}[{RATE_WINDOW}]
   )
 )
 /
@@ -101,20 +108,20 @@ sum by (destination_workload) (
   rate(
     istio_request_duration_milliseconds_count{{
       {COMMON_ISTIO_FILTER}
-    }}[1m]
+    }}[{RATE_WINDOW}]
   )
 )
 """,
 
-    "cpu_usage_cores": """
+    "cpu_usage_cores": f"""
 sum by (pod) (
   rate(
-    container_cpu_usage_seconds_total{
+    container_cpu_usage_seconds_total{{
       namespace="default",
       container!="POD",
       container!="istio-proxy",
       pod!~"online-boutique-test.*"
-    }[1m]
+    }}[{RATE_WINDOW}]
   )
 )
 """,
