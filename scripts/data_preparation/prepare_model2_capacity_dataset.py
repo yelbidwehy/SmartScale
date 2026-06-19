@@ -32,13 +32,14 @@ PREDICTION_HORIZON_STEPS = 6   # 6 × 5s = 30 seconds ahead
 # FIX: scalers were previously fit on the full dataset before any split,
 # leaking test-set statistics into both the input and output scalers.
 TRAIN_RUNS = [
-    "ramp_up_20_120",
-    "ramp_down_120_20",
-    "spike_train_20_120_40",
+    "train_01",
+    "train_02",
+    "train_03",
+    "train_05_300_users",
 ]
 
 TEST_RUNS = [
-    "spike_test_30_120_50",
+    "test_01",
 ]
 # Warm-up detection threshold: timestamps where frontend_rps std across
 # services exceeds this value are treated as warm-up and dropped.

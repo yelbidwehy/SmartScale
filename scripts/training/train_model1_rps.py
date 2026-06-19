@@ -7,12 +7,12 @@ import pandas as pd
 import random
 
 
-from sklearn.metrics import mean_absolute_error, mean_squared_error , r2_score
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-DATA_DIR = PROJECT_ROOT / "data" / "processed" / "model1_dataset" 
+DATA_DIR = PROJECT_ROOT / "data" / "processed" / "model1_dataset"
 MODEL_PATH = PROJECT_ROOT / "models" / "model1_rps_lstm.pth"
 CHART_DIR = PROJECT_ROOT / "outputs" / "charts"
 EVAL_DIR = PROJECT_ROOT / "outputs" / "evaluations"
@@ -28,6 +28,10 @@ VAL_SPLIT = 0.2
 BATCH_SIZE = 64
 WEIGHT_DECAY = 1e-5
 GRAD_CLIP_NORM = 1.0
+
+# --- CHANGE 1: LR scheduler settings ---
+LR_SCHEDULER_FACTOR = 0.5
+LR_SCHEDULER_PATIENCE = 7
 
 SEED = 42
 random.seed(SEED)
@@ -84,7 +88,7 @@ y_test = torch.tensor(y_test_np, dtype=torch.float32)
 
 
 class RPSLSTMModel(nn.Module):
-    def __init__(self, input_size=1, hidden_size=64, num_layers=1, dropout=0.2):
+    def __init__(self, input_size=1, hidden_size=128, num_layers=2, dropout=0.2):
         super().__init__()
 
         self.lstm = nn.LSTM(
@@ -112,23 +116,39 @@ class RPSLSTMModel(nn.Module):
 
 model = RPSLSTMModel(
     input_size=1,
-    hidden_size=64,
-    num_layers=1,
+    hidden_size=128,
+    num_layers=2,
     dropout=0.2
 )
 
-criterion = nn.SmoothL1Loss()
+# --- CHANGE 2: MSE loss instead of SmoothL1Loss ---
+# SmoothL1 (Huber) under-weights large errors, which are exactly the high-RPS
+# spikes that matter most for a scaling decision. MSE penalizes them quadratically.
+criterion = nn.MSELoss()
+
 optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
 
+# --- CHANGE 1 (cont.): LR scheduler, reduces LR when val loss plateaus ---
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+    optimizer, mode="min", factor=LR_SCHEDULER_FACTOR, patience=LR_SCHEDULER_PATIENCE
+)
+
 train_dataset = torch.utils.data.TensorDataset(X_fit, y_fit)
+
+# --- CHANGE 3: shuffle=True ---
+# Chronological train/val split already prevents leakage (val is a later time
+# window than fit). Shuffling batches WITHIN the fit set is safe and standard;
+# shuffle=False meant every epoch saw batches in identical order, which can
+# bias gradient updates toward position-in-sequence rather than RPS dynamics.
 train_loader = torch.utils.data.DataLoader(
     train_dataset,
     batch_size=BATCH_SIZE,
-    shuffle=False
+    shuffle=True
 )
 
 train_losses = []
 val_losses = []
+lr_history = []
 
 best_val_loss = float("inf")
 best_state = None
@@ -159,6 +179,10 @@ for epoch in range(EPOCHS):
 
     train_losses.append(epoch_train_loss)
     val_losses.append(val_loss.item())
+    lr_history.append(optimizer.param_groups[0]["lr"])
+
+    # step the scheduler on validation loss
+    scheduler.step(val_loss.item())
 
     if val_loss.item() < best_val_loss:
         best_val_loss = val_loss.item()
@@ -167,10 +191,12 @@ for epoch in range(EPOCHS):
     else:
         patience_counter += 1
 
+    current_lr = optimizer.param_groups[0]["lr"]
     print(
         f"Epoch {epoch + 1}/{EPOCHS} | "
         f"Train Loss: {epoch_train_loss:.4f} | "
-        f"Val Loss: {val_loss.item():.4f}"
+        f"Val Loss: {val_loss.item():.4f} | "
+        f"LR: {current_lr:.6f}"
     )
 
     if patience_counter >= PATIENCE:
@@ -187,12 +213,24 @@ print(f"Best val loss: {best_val_loss:.6f}")
 plt.figure(figsize=(10, 5))
 plt.plot(train_losses, label="Train Loss")
 plt.plot(val_losses, label="Val Loss")
-plt.title("Model 1 - RPS Forecasting Loss")
+plt.title("Model 1 - RPS Forecasting Loss (improved)")
 plt.xlabel("Epoch")
 plt.ylabel("MSE Loss")
 plt.legend()
 plt.grid(True)
 plt.savefig(CHART_DIR / "model1_rps_training_loss.png", dpi=300, bbox_inches="tight")
+plt.close()
+
+# Optional: plot the LR schedule so you can see when it dropped
+plt.figure(figsize=(10, 3))
+plt.plot(lr_history, label="Learning rate")
+plt.title("Model 1 - Learning Rate Schedule")
+plt.xlabel("Epoch")
+plt.ylabel("LR")
+plt.yscale("log")
+plt.legend()
+plt.grid(True)
+plt.savefig(CHART_DIR / "model1_rps_lr_schedule.png", dpi=300, bbox_inches="tight")
 plt.close()
 
 model.eval()
@@ -240,7 +278,7 @@ summary_df.to_csv(EVAL_DIR / "model1_rps_summary.csv", index=False)
 plt.figure(figsize=(10, 5))
 plt.plot(actual_real.flatten(), label="Actual RPS")
 plt.plot(pred_real.flatten(), label="Predicted RPS")
-plt.title("Model 1 - Predicted vs Actual RPS")
+plt.title("Model 1 - Predicted vs Actual RPS (improved)")
 plt.xlabel("Test Sample")
 plt.ylabel("Requests per Second")
 plt.legend()
@@ -250,7 +288,7 @@ plt.close()
 
 plt.figure(figsize=(10, 5))
 plt.hist(eval_df["absolute_error"], bins=20)
-plt.title("Model 1 - Absolute Error Distribution")
+plt.title("Model 1 - Absolute Error Distribution (improved)")
 plt.xlabel("Absolute Error (RPS)")
 plt.ylabel("Count")
 plt.grid(True)
@@ -260,6 +298,7 @@ plt.close()
 print("\nFiles saved:")
 print(f"- {MODEL_PATH}")
 print(f"- {CHART_DIR / 'model1_rps_training_loss.png'}")
+print(f"- {CHART_DIR / 'model1_rps_lr_schedule.png'}")
 print(f"- {CHART_DIR / 'model1_rps_prediction_vs_actual.png'}")
 print(f"- {CHART_DIR / 'model1_rps_error_distribution.png'}")
 print(f"- {EVAL_DIR / 'model1_rps_evaluation.csv'}")

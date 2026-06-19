@@ -9,7 +9,7 @@ metadata:
 spec:
   image: locust-boutique-custom:1.0
   imagePullPolicy: Never
-  workers: 2
+  workers: 1
   args: "--host http://istio-gateway-istio.default.svc.cluster.local"
 
   locustfile:
