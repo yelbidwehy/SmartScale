@@ -1,18 +1,9 @@
 # Multi-run staged load experiment runner — low volatility batch
 # Uses 8 train + 2 test runs designed to reduce step-to-step RPS volatility
-# compared to the original train_001-004/test_001 batch, while keeping
-# test run peaks and minimums nested inside the train runs' range
-# (verified: max train peak 260 >= max test peak 195; min train value
-# 15 <= min test value 45 — no scaler extrapolation risk).
 
 $ErrorActionPreference = "Stop"
 
-# ── Resolve project root explicitly ───────────────────────────────────────
-# Fixes the path bug from the original script: $runListFile and the python
-# call below used relative paths, which resolved relative to wherever this
-# script was invoked from (scripts\experiments\) instead of the project
-# root, causing "scripts\experiments\scripts\data_collection\..." errors
-# and a missing-directory failure when writing the manifest file.
+
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectRoot = Split-Path -Parent (Split-Path -Parent $ScriptDir)
 
@@ -27,10 +18,6 @@ if (-not (Test-Path $RunManifestDir)) {
 $hostUrl = "http://istio-gateway-istio.default.svc.cluster.local:80"
 $locustBaseUrl = "http://localhost:8089"
 
-# ── Run plans: low-volatility batch, verified ranges ──────────────────────
-# Max single-stage jump across all runs is 50 users (vs up to 100 in the
-# original batch). Stage durations stretched slightly (4-8 min) to let RPS
-# settle before each transition.
 
 $runPlans = @(
     @{

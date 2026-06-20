@@ -12,7 +12,6 @@ import torch.nn as nn
 import joblib
 from prometheus_client import start_http_server, Gauge
 import os
-from pathlib import Path
 
 # =========================================================
 # Logging
@@ -33,7 +32,7 @@ if os.name != "nt" and Path("/app").exists():
 else:
     PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-MODEL1_DIR = PROJECT_ROOT / "data" / "processed" / "two_model_dataset" 
+MODEL1_DIR = PROJECT_ROOT / "data" / "processed" / "model1_dataset"
 MODEL2_DIR = PROJECT_ROOT / "data" / "processed" / "model2_dataset"
 
 MODEL1_PATH = PROJECT_ROOT / "models" / "model1_rps_lstm.pth"
@@ -56,7 +55,7 @@ MIN_REPLICAS = 1
 MAX_REPLICAS = 10
 
 SMOOTHING_ALPHA = 0.3
-SCALE_DOWN_COOLDOWN_SECONDS = 60
+SCALE_DOWN_COOLDOWN_SECONDS = 0
 
 TRAINING_MAX_RPS = 125.0
 
@@ -76,6 +75,10 @@ SERVICES = [
 EXCLUDE_FROM_SCALING = [
     # "redis-cart"
 ]
+
+SERVICE_REPLICA_BIAS = {
+    "recommendationservice": 0.4,
+}
 
 
 # =========================================================
@@ -122,20 +125,24 @@ model2_raw_prediction_gauge = Gauge(
 # =========================================================
 
 class RPSLSTMModel(nn.Module):
-    def __init__(self, input_size=1, hidden_size=64, num_layers=2):
+    def __init__(self, input_size=1, hidden_size=128, num_layers=2, dropout=0.2):
         super().__init__()
 
         self.lstm = nn.LSTM(
             input_size=input_size,
             hidden_size=hidden_size,
             num_layers=num_layers,
+            dropout=dropout if num_layers > 1 else 0.0,
             batch_first=True
         )
 
         self.fc = nn.Sequential(
             nn.Linear(hidden_size, 32),
             nn.ReLU(),
-            nn.Linear(32, 1)
+            nn.Dropout(dropout),
+            nn.Linear(32, 16),
+            nn.ReLU(),
+            nn.Linear(16, 1)
         )
 
     def forward(self, x):
@@ -310,6 +317,10 @@ def smooth_rps(predicted_rps: float) -> float:
 
 def clamp_replicas(value: int) -> int:
     return max(MIN_REPLICAS, min(MAX_REPLICAS, value))
+
+
+def apply_replica_bias(service: str, raw_prediction: float) -> float:
+    return raw_prediction + SERVICE_REPLICA_BIAS.get(service, 0.0)
 
 
 def stabilize_replicas(service: str, recommended_replicas: int) -> int:
@@ -562,7 +573,9 @@ def run_prediction_loop():
                     feature_df=feature_df
                 )
 
-                rounded_replicas = int(round(raw_prediction))
+                adjusted_prediction = apply_replica_bias(service, raw_prediction)
+
+                rounded_replicas = int(round(adjusted_prediction))
                 rounded_replicas = clamp_replicas(rounded_replicas)
                 stable_replicas = stabilize_replicas(service, rounded_replicas)
 
@@ -574,6 +587,7 @@ def run_prediction_loop():
                 decisions.append({
                     "service": service,
                     "raw_prediction": round(raw_prediction, 3),
+                    "adjusted_prediction": round(adjusted_prediction, 3),
                     "predicted_replicas": stable_replicas,
                     "service_rps": round(service_rps, 2),
                     "cpu": round(cpu, 3),

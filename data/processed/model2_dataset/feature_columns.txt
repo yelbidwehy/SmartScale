@@ -1,3 +1,4 @@
+predicted_rps
 frontend_rps
 service_rps
 rps_lag_1

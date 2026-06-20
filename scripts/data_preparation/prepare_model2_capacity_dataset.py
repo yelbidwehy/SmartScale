@@ -21,26 +21,13 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 # =========================================================
 
 CPU_PER_POD       = 0.2    # CPU cores allocated per pod
-MEMORY_PER_POD_MB = 256    # Memory allocated per pod (MB)
+MEMORY_PER_POD_MB = 128    # Memory allocated per pod (MB)
 SAFETY_FACTOR     = 1.2    # Over-provision multiplier
 MIN_REPLICAS      = 1
 MAX_REPLICAS      = 10
 
 PREDICTION_HORIZON_STEPS = 6   # 6 × 5s = 30 seconds ahead
 
-# Runs used for training. The remaining run(s) form the held-out test set.
-# FIX: scalers were previously fit on the full dataset before any split,
-# leaking test-set statistics into both the input and output scalers.
-TRAIN_RUNS = [
-    "train_01",
-    "train_02",
-    "train_03",
-    "train_05_300_users",
-]
-
-TEST_RUNS = [
-    "test_01",
-]
 # Warm-up detection threshold: timestamps where frontend_rps std across
 # services exceeds this value are treated as warm-up and dropped.
 WARMUP_STD_THRESHOLD = 0.01
@@ -217,7 +204,7 @@ def main() -> None:
     df = pd.concat([df, service_dummies], axis=1)
 
     feature_columns = [
-        #"predicted_rps",
+        "predicted_rps",
         "frontend_rps",
         "service_rps",
         "rps_lag_1",
@@ -237,23 +224,26 @@ def main() -> None:
     )
 
     # ----------------------------------------------------------
-    # 8. Train / test split by run
-    # FIX: scalers were fit on the entire dataset; now fit exclusively
-    # on training runs to prevent test-set leakage.
+    # 8. Train / test split by run_type (same approach as Model 1)
     # ----------------------------------------------------------
-    all_runs = sorted(df["run_name"].unique().tolist())
-    unrecognised = set(all_runs) - set(TRAIN_RUNS) - set(TEST_RUNS)
-    if unrecognised:
+    if "run_type" not in df.columns:
+        raise ValueError("Missing run_type column. Cannot split train/test.")
+
+    run_type_values = sorted(df["run_type"].astype(str).str.lower().unique().tolist())
+    expected_types = {"train", "test"}
+    if not expected_types.issubset(set(run_type_values)):
         raise ValueError(
-            f"Found run(s) not assigned to TRAIN_RUNS or TEST_RUNS: {unrecognised}. "
-            "Update the TRAIN_RUNS / TEST_RUNS constants."
+            f"Expected run_type to include {expected_types}, found: {run_type_values}"
         )
 
-    train_df = df[df["run_name"].isin(TRAIN_RUNS)].copy()
-    test_df  = df[df["run_name"].isin(TEST_RUNS)].copy()
+    train_df = df[df["run_type"].astype(str).str.lower() == "train"].copy()
+    test_df  = df[df["run_type"].astype(str).str.lower() == "test"].copy()
 
-    print(f"\nTrain runs : {TRAIN_RUNS}  ({len(train_df)} rows)")
-    print(f"Test  runs : {TEST_RUNS}   ({len(test_df)} rows)")
+    train_runs = sorted(train_df["run_name"].unique().tolist())
+    test_runs  = sorted(test_df["run_name"].unique().tolist())
+
+    print(f"\nTrain runs : {train_runs}  ({len(train_df)} rows)")
+    print(f"Test  runs : {test_runs}   ({len(test_df)} rows)")
 
     X_train_raw = train_df[feature_columns].values
     X_test_raw  = test_df[feature_columns].values
@@ -317,6 +307,8 @@ def main() -> None:
     print(f"After zero-load removal : {after_zero_removal}")
     print(f"After warm-up removal   : {len(train_df) + len(test_df)} "
           f"({n_warmup_ts * 10} warm-up rows dropped)")
+    print(f"Train runs              : {train_runs}")
+    print(f"Test  runs              : {test_runs}")
     print(f"Train rows              : {len(train_df)}")
     print(f"Test  rows              : {len(test_df)}")
     print(f"X_train shape           : {X_train.shape}")
