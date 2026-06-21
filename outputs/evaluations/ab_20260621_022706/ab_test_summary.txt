@@ -1,0 +1,10 @@
+﻿run_prefix=ab_20260621_022706
+namespace=default
+proposed_manifest=.\k8s\keda\all-services-predicted-replicas-scaledobjects.yaml
+baseline_manifest=.\k8s\hpa\all-services-cpu-hpa.yaml
+run_a=ab_20260621_022706_A_proposed
+run_b=ab_20260621_022706_B_baseline
+a_replica_csv=outputs/evaluations/ab_20260621_022706_A_proposed/keda_replica_timeline.csv
+b_replica_csv=outputs/evaluations/ab_20260621_022706_B_baseline/keda_replica_timeline.csv
+a_stage_csv=outputs/evaluations/ab_20260621_022706_A_proposed/keda_stage_timeline.csv
+b_stage_csv=outputs/evaluations/ab_20260621_022706_B_baseline/keda_stage_timeline.csv

@@ -1,0 +1,54 @@
+
+C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale>kubectl get hpa
+NAME                                                       REFERENCE                          TARGETS     MINPODS   MAXPODS   REPLICAS   AGE
+keda-hpa-adservice-predicted-replicas-scaler               Deployment/adservice               3/1 (avg)   1         10        1          3m18s
+keda-hpa-cartservice-predicted-replicas-scaler             Deployment/cartservice             2/1 (avg)   1         10        1          3m18s
+keda-hpa-checkoutservice-predicted-replicas-scaler         Deployment/checkoutservice         1/1 (avg)   1         10        1          3m18s
+keda-hpa-currencyservice-predicted-replicas-scaler         Deployment/currencyservice         3/1 (avg)   1         10        1          3m18s
+keda-hpa-emailservice-predicted-replicas-scaler            Deployment/emailservice            2/1 (avg)   1         10        1          3m17s
+keda-hpa-frontend-predicted-replicas-scaler                Deployment/frontend                5/1 (avg)   1         10        1          3m16s
+keda-hpa-paymentservice-predicted-replicas-scaler          Deployment/paymentservice          2/1 (avg)   1         10        1          3m16s
+keda-hpa-productcatalogservice-predicted-replicas-scaler   Deployment/productcatalogservice   2/1 (avg)   1         10        1          3m14s
+keda-hpa-recommendationservice-predicted-replicas-scaler   Deployment/recommendationservice   3/1 (avg)   1         10        1          3m14s
+keda-hpa-shippingservice-predicted-replicas-scaler         Deployment/shippingservice         1/1 (avg)   1         10        1          3m14s
+
+C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale>kubectl get hpa
+NAME                                                       REFERENCE                          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+keda-hpa-adservice-predicted-replicas-scaler               Deployment/adservice               1/1 (avg)       1         10        3          3m25s
+keda-hpa-cartservice-predicted-replicas-scaler             Deployment/cartservice             1/1 (avg)       1         10        2          3m25s
+keda-hpa-checkoutservice-predicted-replicas-scaler         Deployment/checkoutservice         1/1 (avg)       1         10        1          3m25s
+keda-hpa-currencyservice-predicted-replicas-scaler         Deployment/currencyservice         1/1 (avg)       1         10        3          3m25s
+keda-hpa-emailservice-predicted-replicas-scaler            Deployment/emailservice            1/1 (avg)       1         10        2          3m24s
+keda-hpa-frontend-predicted-replicas-scaler                Deployment/frontend                1250m/1 (avg)   1         10        4          3m23s
+keda-hpa-paymentservice-predicted-replicas-scaler          Deployment/paymentservice          1/1 (avg)       1         10        2          3m23s
+keda-hpa-productcatalogservice-predicted-replicas-scaler   Deployment/productcatalogservice   2/1 (avg)       1         10        1          3m21s
+keda-hpa-recommendationservice-predicted-replicas-scaler   Deployment/recommendationservice   3/1 (avg)       1         10        1          3m21s
+keda-hpa-shippingservice-predicted-replicas-scaler         Deployment/shippingservice         1/1 (avg)       1         10        1          3m21s
+
+C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale>kubectl get hpa
+NAME                                                       REFERENCE                          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+keda-hpa-adservice-predicted-replicas-scaler               Deployment/adservice               1/1 (avg)       1         10        3          3m29s
+keda-hpa-cartservice-predicted-replicas-scaler             Deployment/cartservice             1/1 (avg)       1         10        2          3m29s
+keda-hpa-checkoutservice-predicted-replicas-scaler         Deployment/checkoutservice         1/1 (avg)       1         10        1          3m29s
+keda-hpa-currencyservice-predicted-replicas-scaler         Deployment/currencyservice         1/1 (avg)       1         10        3          3m29s
+keda-hpa-emailservice-predicted-replicas-scaler            Deployment/emailservice            1/1 (avg)       1         10        2          3m28s
+keda-hpa-frontend-predicted-replicas-scaler                Deployment/frontend                1250m/1 (avg)   1         10        4          3m27s
+keda-hpa-paymentservice-predicted-replicas-scaler          Deployment/paymentservice          1/1 (avg)       1         10        2          3m27s
+keda-hpa-productcatalogservice-predicted-replicas-scaler   Deployment/productcatalogservice   1/1 (avg)       1         10        2          3m25s
+keda-hpa-recommendationservice-predicted-replicas-scaler   Deployment/recommendationservice   3/1 (avg)       1         10        1          3m25s
+keda-hpa-shippingservice-predicted-replicas-scaler         Deployment/shippingservice         1/1 (avg)       1         10        1          3m25s
+
+C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale>kubectl get hpa
+NAME                                                       REFERENCE                          TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+keda-hpa-adservice-predicted-replicas-scaler               Deployment/adservice               1/1 (avg)      1         10        4          6m54s
+keda-hpa-cartservice-predicted-replicas-scaler             Deployment/cartservice             1/1 (avg)      1         10        2          6m54s
+keda-hpa-checkoutservice-predicted-replicas-scaler         Deployment/checkoutservice         1/1 (avg)      1         10        1          6m54s
+keda-hpa-currencyservice-predicted-replicas-scaler         Deployment/currencyservice         1/1 (avg)      1         10        3          6m54s
+keda-hpa-emailservice-predicted-replicas-scaler            Deployment/emailservice            1/1 (avg)      1         10        2          6m53s
+keda-hpa-frontend-predicted-replicas-scaler                Deployment/frontend                1/1 (avg)      1         10        5          6m52s
+keda-hpa-paymentservice-predicted-replicas-scaler          Deployment/paymentservice          1/1 (avg)      1         10        2          6m52s
+keda-hpa-productcatalogservice-predicted-replicas-scaler   Deployment/productcatalogservice   1/1 (avg)      1         10        2          6m50s
+keda-hpa-recommendationservice-predicted-replicas-scaler   Deployment/recommendationservice   750m/1 (avg)   1         10        4          6m50s
+keda-hpa-shippingservice-predicted-replicas-scaler         Deployment/shippingservice         1/1 (avg)      1         10        1          6m50s
+
+C:\Users\yelbidwehy\OneDrive - Elm\MyFiles\MasterCairo\SecondYear\Term2\GradeProject\MyProject\SmartScale>

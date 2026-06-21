@@ -1,0 +1,11 @@
+﻿run_name=ab_20260621_022706_B_baseline
+namespace=default
+started_at=2026-06-21 03:12:22
+ended_at=2026-06-21 03:56:17
+sample_interval_seconds=10
+spawn_rate=5
+scaler_expectation=hpa
+records=1980
+services=adservice,cartservice,checkoutservice,currencyservice,emailservice,frontend,paymentservice,productcatalogservice,recommendationservice,shippingservice
+replica_csv=outputs\evaluations\ab_20260621_022706_B_baseline\keda_replica_timeline.csv
+stage_csv=outputs\evaluations\ab_20260621_022706_B_baseline\keda_stage_timeline.csv

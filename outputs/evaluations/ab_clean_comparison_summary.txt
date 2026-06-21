@@ -1,0 +1,13 @@
+﻿A_run=outputs/evaluations/ab_20260621_022706_A_proposed
+B_clean_run=outputs/evaluations/baseline_clean_20260621_040846
+services_count=10
+A_mean_of_service_avg_desired=2.536
+B_mean_of_service_avg_desired=4.044
+mean_delta_A_minus_B=-1.508
+A_sum_service_avg_desired=25.36
+B_sum_service_avg_desired=40.44
+sum_delta_A_minus_B=-15.08
+services_where_A_lower_than_B=6
+services_where_A_higher_than_B=4
+services_equal=0
+service_summary_csv=outputs\evaluations\ab_clean_comparison_service_summary.csv

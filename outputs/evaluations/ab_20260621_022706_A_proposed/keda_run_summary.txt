@@ -1,0 +1,11 @@
+﻿run_name=ab_20260621_022706_A_proposed
+namespace=default
+started_at=2026-06-21 02:29:11
+ended_at=2026-06-21 03:10:17
+sample_interval_seconds=10
+spawn_rate=5
+scaler_expectation=keda
+records=1980
+services=adservice,cartservice,checkoutservice,currencyservice,emailservice,frontend,paymentservice,productcatalogservice,recommendationservice,shippingservice
+replica_csv=outputs\evaluations\ab_20260621_022706_A_proposed\keda_replica_timeline.csv
+stage_csv=outputs\evaluations\ab_20260621_022706_A_proposed\keda_stage_timeline.csv

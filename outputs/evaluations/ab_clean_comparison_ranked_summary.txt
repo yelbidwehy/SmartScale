@@ -1,0 +1,14 @@
+﻿ranking_metric=delta_avg_desired (A - B, lower is better savings)
+sorted=ascending
+source_csv=outputs/evaluations/ab_clean_comparison_service_summary.csv
+ranked_csv=outputs/evaluations/ab_clean_comparison_ranked_by_savings.csv
+
+top_3_savings:
+currencyservice: delta_avg_desired=-6.162
+productcatalogservice: delta_avg_desired=-5.197
+frontend: delta_avg_desired=-4.712
+
+bottom_3_savings:
+adservice: delta_avg_desired=2.273
+paymentservice: delta_avg_desired=0.965
+recommendationservice: delta_avg_desired=0.758
